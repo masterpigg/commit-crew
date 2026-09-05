@@ -1,0 +1,56 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.fll.pushtogithub'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.fll.pushtogithub"
+        minSdk 24        // Android 7.0 — matches LEGO SPIKE app's minimum
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+    // Encrypted storage for the GitHub token and repo config.
+    implementation 'androidx.security:security-crypto:1.1.0-alpha06'
+
+    // Coroutines for background network work off the UI thread.
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
+
+    // HTTP client for the GitHub REST API.
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
+    // JSON handling for GitHub API request/response bodies.
+    implementation 'org.json:json:20240303'
+}

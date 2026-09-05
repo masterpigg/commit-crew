@@ -1,0 +1,41 @@
+<resources>
+    <string name="app_name">Push to Team GitHub</string>
+    <string name="share_target_label">Push to Team GitHub</string>
+
+    <!-- Settings screen -->
+    <string name="settings_title">Team GitHub Setup</string>
+    <string name="settings_intro">Set this up once. The token is stored encrypted on this tablet only.</string>
+    <string name="label_token">GitHub token</string>
+    <string name="label_owner">Repo owner (user or org)</string>
+    <string name="label_repo">Repo name</string>
+    <string name="label_branch">Branch</string>
+    <string name="label_base_path">Folder in repo for robot code</string>
+    <string name="label_robot1">Name for Robot 1</string>
+    <string name="label_robot2">Name for Robot 2</string>
+    <string name="save_settings">Save setup</string>
+    <string name="test_connection">Test connection</string>
+    <string name="settings_saved">Setup saved.</string>
+    <string name="hint_owner">e.g. masterpigg</string>
+    <string name="hint_repo">e.g. final-first-lego-league</string>
+    <string name="hint_branch">e.g. main</string>
+    <string name="hint_base_path">e.g. robot-game</string>
+
+    <!-- Share screen -->
+    <string name="share_title">Save robot code to GitHub</string>
+    <string name="pick_robot">Which robot?</string>
+    <string name="robot_1">Robot 1</string>
+    <string name="robot_2">Robot 2</string>
+    <string name="comment_label">What did you change? (required)</string>
+    <string name="comment_hint">e.g. Tuned Run 1 gyro turn, coral arm clears the wall now</string>
+    <string name="commit_and_push">Commit &amp; Push</string>
+    <string name="need_setup">Please open the app and finish setup first (token and repo).</string>
+    <string name="need_comment">Please add a short comment about what changed.</string>
+    <string name="need_robot">Please pick which robot this is.</string>
+    <string name="no_file">No file was shared. In the SPIKE app, tap Share and pick this app.</string>
+    <string name="pushing">Pushing to GitHub…</string>
+    <string name="push_success">Saved to GitHub!</string>
+    <string name="push_failed">Push failed</string>
+    <string name="view_commit">View on GitHub</string>
+    <string name="open_settings">Setup</string>
+    <string name="done">Done</string>
+</resources>
