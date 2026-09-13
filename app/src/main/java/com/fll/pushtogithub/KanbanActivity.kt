@@ -115,21 +115,35 @@ class KanbanActivity : AppCompatActivity() {
         val cardColor = cardColors[name] ?: cardColors[lower] ?: cardColors["owner:$lower"]
         if (!cardColor.isNullOrBlank() && cardColor != "#1976D2") return cardColor
 
-        // 2. Check repo label colors from GitHub
+        // 2. Check repo label / Projects v2 option colors from GitHub
         val repoColor = repoLabelColors[lower] ?: repoLabelColors["owner:$lower"]
         if (!repoColor.isNullOrBlank()) return repoColor
 
-        // 3. Fallback: Deterministic palette based on name hash so every member gets a distinct color
+        // 3. Fallback: Exact GitHub Projects v2 field options palette mapping
+        val defaultOptionsMap = mapOf(
+            "fido" to "#E53935",          // Red
+            "whiskers" to "#F57C00",         // Orange
+            "polly" to "#FFB300",           // Yellow
+            "bubbles" to "#43A047",            // Green
+            "nibbles" to "#1E88E5",          // Blue
+            "thumper" to "#8E24AA",         // Purple
+            "patches" to "#D81B60",        // Pink
+            "coach owl" to "#546E7A", // Slate
+            "coach pigg" to "#546E7A"      // Slate
+        )
+        val defaultColor = defaultOptionsMap[lower]
+        if (defaultColor != null) return defaultColor
+
+        // 4. Fallback: Deterministic palette based on name hash
         val palette = listOf(
-            "#7B1FA2", // Deep Purple
-            "#C2185B", // Deep Pink
-            "#D32F2F", // Red
-            "#388E3C", // Green
+            "#E53935", // Red
             "#F57C00", // Orange
-            "#0097A7", // Cyan
-            "#8E24AA", // Violet
-            "#00897B", // Teal
-            "#5D4037"  // Brown
+            "#FFB300", // Yellow
+            "#43A047", // Green
+            "#1E88E5", // Blue
+            "#8E24AA", // Purple
+            "#D81B60", // Pink
+            "#546E7A"  // Slate
         )
         val index = abs(lower.hashCode()) % palette.size
         return palette[index]
