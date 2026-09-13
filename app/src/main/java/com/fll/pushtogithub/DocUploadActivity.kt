@@ -198,32 +198,46 @@ class DocUploadActivity : AppCompatActivity() {
     private fun showPreview() {
         val bytes = fileBytes ?: return
         val mimeType = detectedMimeType.orEmpty()
+        val ext = originalFileName.substringAfterLast('.', "").lowercase()
 
         when {
-            mimeType.startsWith("image/") -> {
+            mimeType.startsWith("image/") || ext in listOf("png", "jpg", "jpeg", "gif", "bmp", "svg") -> {
                 val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                 if (bitmap != null) {
                     binding.imagePreview.setImageBitmap(bitmap)
                     binding.imagePreview.visibility = View.VISIBLE
+                    binding.fileTypeIcon.visibility = View.GONE
+                    binding.textPreview.visibility = View.GONE
                 } else {
-                    binding.fileTypeIcon.text = "🖼️"
+                    binding.fileTypeIcon.text = "🖼️ $originalFileName"
                     binding.fileTypeIcon.visibility = View.VISIBLE
+                    binding.imagePreview.visibility = View.GONE
+                    binding.textPreview.visibility = View.GONE
                 }
             }
-            mimeType.contains("pdf") -> {
+            mimeType.contains("pdf") || ext == "pdf" -> {
                 binding.imagePreview.visibility = View.GONE
-                binding.fileTypeIcon.text = "📄"
+                binding.textPreview.visibility = View.GONE
+                binding.fileTypeIcon.text = "📄 PDF Document\n$originalFileName"
                 binding.fileTypeIcon.visibility = View.VISIBLE
             }
-            mimeType.startsWith("text/") -> {
-                val text = String(bytes, Charsets.UTF_8)
-                binding.textPreview.text = if (text.length > 500) text.take(500) + "…" else text
+            mimeType.contains("word") || mimeType.contains("document") || ext in listOf("doc", "docx", "pages") -> {
+                binding.imagePreview.visibility = View.GONE
+                binding.textPreview.visibility = View.GONE
+                binding.fileTypeIcon.text = "📝 Word / Text Document\n$originalFileName"
+                binding.fileTypeIcon.visibility = View.VISIBLE
+            }
+            mimeType.startsWith("text/") || ext in listOf("txt", "md", "csv", "json") -> {
+                val text = runCatching { String(bytes, Charsets.UTF_8) }.getOrDefault("")
+                binding.textPreview.text = "📝 $originalFileName:\n\n" + (if (text.length > 500) text.take(500) + "…" else text)
                 binding.textPreview.visibility = View.VISIBLE
                 binding.imagePreview.visibility = View.GONE
+                binding.fileTypeIcon.visibility = View.GONE
             }
             else -> {
                 binding.imagePreview.visibility = View.GONE
-                binding.fileTypeIcon.text = "📎"
+                binding.textPreview.visibility = View.GONE
+                binding.fileTypeIcon.text = "📎 Attached File\n$originalFileName"
                 binding.fileTypeIcon.visibility = View.VISIBLE
             }
         }
