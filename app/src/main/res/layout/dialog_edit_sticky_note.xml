@@ -11,12 +11,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Task Title"
+        app:hintTextColor="#212121"
+        app:boxStrokeColor="#212121"
         android:layout_marginBottom="12dp">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/inputTaskTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="#111111"
+            android:textColorHint="#757575"
+            android:textSize="16sp"
+            android:textStyle="bold"
             android:inputType="textCapSentences" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -25,7 +31,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingBottom="4dp">
+        android:paddingBottom="8dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnFormatHeading"
@@ -34,6 +40,8 @@
             android:layout_height="36dp"
             android:text="📌 Heading"
             android:textSize="11sp"
+            android:textColor="#212121"
+            app:strokeColor="#616161"
             android:padding="0dp"
             android:layout_marginEnd="6dp" />
 
@@ -44,6 +52,8 @@
             android:layout_height="36dp"
             android:text="B Bold"
             android:textSize="11sp"
+            android:textColor="#212121"
+            app:strokeColor="#616161"
             android:textStyle="bold"
             android:padding="0dp"
             android:layout_marginEnd="6dp" />
@@ -55,6 +65,8 @@
             android:layout_height="36dp"
             android:text="☑ Checklist"
             android:textSize="11sp"
+            android:textColor="#212121"
+            app:strokeColor="#616161"
             android:padding="0dp"
             android:layout_marginEnd="6dp" />
 
@@ -65,6 +77,8 @@
             android:layout_height="36dp"
             android:text="• Bullet"
             android:textSize="11sp"
+            android:textColor="#212121"
+            app:strokeColor="#616161"
             android:padding="0dp" />
 
     </LinearLayout>
@@ -73,12 +87,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Notes / Details (Formatted)"
+        app:hintTextColor="#212121"
+        app:boxStrokeColor="#212121"
         android:layout_marginBottom="16dp">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/inputTaskBody"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="#111111"
+            android:textColorHint="#757575"
+            android:textSize="15sp"
             android:minLines="3"
             android:gravity="top"
             android:inputType="textMultiLine|textCapSentences" />
@@ -90,7 +109,7 @@
         android:text="Category / Workspace"
         android:textSize="14sp"
         android:textStyle="bold"
-        android:textColor="#5D4037"
+        android:textColor="#212121"
         android:paddingBottom="6dp" />
 
     <RadioGroup
@@ -105,21 +124,27 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="🤖 Robot" />
+            android:text="🤖 Robot"
+            android:textColor="#111111"
+            android:textStyle="bold" />
 
         <RadioButton
             android:id="@+id/radioCatInnovation"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="💡 Innovation" />
+            android:text="💡 Innovation"
+            android:textColor="#111111"
+            android:textStyle="bold" />
 
         <RadioButton
             android:id="@+id/radioCatGeneral"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="📋 General" />
+            android:text="📋 General"
+            android:textColor="#111111"
+            android:textStyle="bold" />
     </RadioGroup>
 
     <TextView
@@ -128,7 +153,7 @@
         android:text="Column / Status"
         android:textSize="14sp"
         android:textStyle="bold"
-        android:textColor="#5D4037"
+        android:textColor="#212121"
         android:paddingBottom="6dp" />
 
     <RadioGroup
@@ -143,21 +168,27 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="To-Do 📌" />
+            android:text="To-Do 📌"
+            android:textColor="#111111"
+            android:textStyle="bold" />
 
         <RadioButton
             android:id="@+id/radioDoing"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Doing 🛠️" />
+            android:text="Doing 🛠️"
+            android:textColor="#111111"
+            android:textStyle="bold" />
 
         <RadioButton
             android:id="@+id/radioDone"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Done ✅" />
+            android:text="Done ✅"
+            android:textColor="#111111"
+            android:textStyle="bold" />
     </RadioGroup>
 
     <TextView
@@ -166,7 +197,7 @@
         android:text="Assigned Owners"
         android:textSize="14sp"
         android:textStyle="bold"
-        android:textColor="#5D4037"
+        android:textColor="#212121"
         android:paddingBottom="6dp" />
 
     <com.google.android.material.chip.ChipGroup
