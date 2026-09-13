@@ -53,12 +53,11 @@
             android:exported="false"
             android:label="@string/settings_title" />
 
-        <!-- Share-receiver for .llsp3 files from SPIKE and other file types.
-             Supports single or multiple file selection. -->
+        <!-- Share-receiver for .llsp3 SPIKE project files (Code Commit Screen) -->
         <activity
             android:name=".ShareActivity"
             android:exported="true"
-            android:label="@string/share_target_label"
+            android:label="@string/share_code_label"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
@@ -68,15 +67,21 @@
             </intent-filter>
         </activity>
 
-        <!-- Documentation upload screen for photos, PDFs, text notes. -->
+        <!-- Share-receiver for photos, PDFs, Word docs, text notes (Notes Commit Screen) -->
         <activity
             android:name=".DocUploadActivity"
-            android:exported="false"
-            android:label="@string/doc_upload_title">
+            android:exported="true"
+            android:label="@string/share_docs_label"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <action android:name="android.intent.action.SEND_MULTIPLE" />
                 <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+                <data android:mimeType="text/*" />
+                <data android:mimeType="application/pdf" />
+                <data android:mimeType="application/msword" />
+                <data android:mimeType="application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
                 <data android:mimeType="*/*" />
             </intent-filter>
         </activity>

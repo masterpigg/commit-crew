@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Push to Team GitHub</string>
     <string name="share_target_label">Push to Team GitHub</string>
+    <string name="share_code_label">Push Robot Code to GitHub</string>
+    <string name="share_docs_label">Push Snap Notes / Docs to GitHub</string>
 
     <!-- Settings screen -->
     <string name="settings_title">Team GitHub Setup</string>
