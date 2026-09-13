@@ -389,6 +389,8 @@ class KanbanActivity : AppCompatActivity() {
         val columnGroup = dialogView.findViewById<RadioGroup>(R.id.columnGroup)
         val ownerChipsGroup = dialogView.findViewById<ChipGroup>(R.id.ownerChipsGroup)
 
+        setupRichTextToolbar(dialogView, inputBody)
+
         for (name in settings.teamRoster) {
             val chip = Chip(this).apply {
                 text = name
@@ -463,6 +465,8 @@ class KanbanActivity : AppCompatActivity() {
         val columnGroup = dialogView.findViewById<RadioGroup>(R.id.columnGroup)
         val ownerChipsGroup = dialogView.findViewById<ChipGroup>(R.id.ownerChipsGroup)
         val btnDelete = dialogView.findViewById<View>(R.id.buttonDeleteCard)
+
+        setupRichTextToolbar(dialogView, inputBody)
 
         inputTitle.setText(card.title)
         val cleanBody = card.body.replace(Regex("(?i)^owner:.*?\\n+"), "").trim()
@@ -569,6 +573,54 @@ class KanbanActivity : AppCompatActivity() {
         }
 
         dialog.show()
+    }
+
+    private fun setupRichTextToolbar(dialogView: View, inputEditText: EditText) {
+        val btnHeading = dialogView.findViewById<View>(R.id.btnFormatHeading)
+        val btnBold = dialogView.findViewById<View>(R.id.btnFormatBold)
+        val btnChecklist = dialogView.findViewById<View>(R.id.btnFormatChecklist)
+        val btnBullet = dialogView.findViewById<View>(R.id.btnFormatBullet)
+
+        btnHeading?.setOnClickListener {
+            insertFormatting(inputEditText, prefix = "### ", suffix = "", defaultText = "Heading")
+        }
+
+        btnBold?.setOnClickListener {
+            insertFormatting(inputEditText, prefix = "**", suffix = "**", defaultText = "bold text")
+        }
+
+        btnChecklist?.setOnClickListener {
+            insertFormatting(inputEditText, prefix = "- [ ] ", suffix = "", defaultText = "Task item")
+        }
+
+        btnBullet?.setOnClickListener {
+            insertFormatting(inputEditText, prefix = "- ", suffix = "", defaultText = "List item")
+        }
+    }
+
+    private fun insertFormatting(
+        editText: EditText,
+        prefix: String,
+        suffix: String = "",
+        defaultText: String = ""
+    ) {
+        val start = editText.selectionStart.coerceAtLeast(0)
+        val end = editText.selectionEnd.coerceAtLeast(0)
+        val text = editText.text ?: return
+
+        if (start != end) {
+            val selected = text.substring(start, end)
+            val replacement = "$prefix$selected$suffix"
+            text.replace(start, end, replacement)
+            editText.setSelection(start + prefix.length, start + prefix.length + selected.length)
+        } else {
+            val newLinePrefix = if (start > 0 && text[start - 1] != '\n') "\n" else ""
+            val insertion = "$newLinePrefix$prefix$defaultText$suffix"
+            text.insert(start, insertion)
+            val selectionPos = start + newLinePrefix.length + prefix.length
+            editText.setSelection(selectionPos, selectionPos + defaultText.length)
+        }
+        editText.requestFocus()
     }
 
     // ── RecyclerView Adapter: Yellow Sticky Notes ─────────────────────────
