@@ -5,6 +5,23 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- Package visibility queries for Android 11+ (API 30+) -->
+    <queries>
+        <package android:name="com.lego.education.spikenext" />
+        <package android:name="com.lego.spike" />
+        <package android:name="com.lego.common.spike" />
+        <package android:name="com.lego.education.spike" />
+        <package android:name="com.lego.spike3" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:mimeType="application/octet-stream" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:mimeType="*/*" />
+        </intent>
+    </queries>
+
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
@@ -13,9 +30,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PushToGitHub">
 
-        <!-- Settings / configuration screen. This is the launcher entry point. -->
+        <!-- Time Machine is the launcher entry point. -->
         <activity
-            android:name=".SettingsActivity"
+            android:name=".TimeMachineActivity"
             android:exported="true"
             android:label="@string/app_name">
             <intent-filter>
@@ -24,9 +41,20 @@
             </intent-filter>
         </activity>
 
-        <!-- Share-receiver screen. The SPIKE app's Share button targets this.
-             It accepts a single shared file of any type so .llsp3 (and any other
-             project export) is delivered here as a content:// URI. -->
+        <!-- Kanban Sticky Notes Activity -->
+        <activity
+            android:name=".KanbanActivity"
+            android:exported="false"
+            android:label="@string/kanban_title" />
+
+        <!-- Settings / configuration screen. Reachable from toolbar menu. -->
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:label="@string/settings_title" />
+
+        <!-- Share-receiver for .llsp3 files from SPIKE and other file types.
+             Supports single or multiple file selection. -->
         <activity
             android:name=".ShareActivity"
             android:exported="true"
@@ -34,10 +62,35 @@
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="*/*" />
             </intent-filter>
         </activity>
+
+        <!-- Documentation upload screen for photos, PDFs, text notes. -->
+        <activity
+            android:name=".DocUploadActivity"
+            android:exported="false"
+            android:label="@string/doc_upload_title">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+        </activity>
+
+        <!-- FileProvider for serving cached .llsp3 files to SPIKE. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
     </application>
 

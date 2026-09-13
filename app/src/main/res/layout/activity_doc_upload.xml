@@ -12,7 +12,7 @@
         android:background="?attr/colorPrimary"
         app:navigationIcon="@android:drawable/ic_menu_revert"
         app:navigationIconTint="@android:color/white"
-        app:title="@string/share_title"
+        app:title="@string/doc_upload_title"
         app:titleTextColor="@android:color/white" />
 
     <ScrollView
@@ -27,37 +27,88 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <TextView
-                android:id="@+id/fileNameText"
+            <!-- Preview area for shared content -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginBottom="16dp"
+                android:background="@android:color/darker_gray">
+
+                <ImageView
+                    android:id="@+id/imagePreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerInside"
+                    android:contentDescription="Preview" />
+
+                <TextView
+                    android:id="@+id/textPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="16dp"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/fileTypeIcon"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:textSize="48sp"
+                    android:visibility="gone" />
+            </FrameLayout>
+
+            <!-- Category selection -->
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/categoryToggle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:paddingBottom="16dp" />
+                android:layout_marginBottom="16dp"
+                app:singleSelection="true"
+                app:selectionRequired="true">
 
-            <!-- Project name (auto-detected from filename, editable) -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonMeetingNotes"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/doc_category_meeting"
+                    android:textSize="12sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonDesign"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/doc_category_design"
+                    android:textSize="12sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonInnovation"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/doc_category_innovation"
+                    android:textSize="12sp" />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <!-- Title / description -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/label_project_name"
+                android:hint="@string/label_doc_title"
+                app:placeholderText="@string/hint_doc_title"
                 android:layout_marginBottom="16dp">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/inputProjectName"
+                    android:id="@+id/inputDocTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Linked issue badge (hidden by default) -->
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipLinkedIssue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:visibility="gone"
-                android:layout_marginBottom="12dp"
-                app:chipIcon="@android:drawable/ic_dialog_info"
-                android:clickable="false" />
 
             <!-- Contributor chips -->
             <TextView
@@ -74,23 +125,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 app:singleSelection="false" />
-
-            <!-- Robot selector (optional) -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/label_robot_select"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:paddingBottom="8dp" />
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/robotChips"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                app:singleSelection="true"
-                app:selectionRequired="false" />
 
             <!-- Comment -->
             <com.google.android.material.textfield.TextInputLayout
@@ -109,7 +143,7 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonPush"
+                android:id="@+id/buttonUpload"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
                 android:textSize="18sp"
@@ -131,14 +165,6 @@
                 android:textSize="15sp" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonViewCommit"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone"
-                android:text="@string/view_commit" />
-
-            <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonDone"
                 style="@style/Widget.Material3.Button"
                 android:layout_width="match_parent"
@@ -147,14 +173,6 @@
                 android:visibility="gone"
                 android:text="@string/btn_done_team_code"
                 android:textSize="16sp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonCancel"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/btn_cancel_team_code" />
 
         </LinearLayout>
     </ScrollView>

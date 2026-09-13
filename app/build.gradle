@@ -1,6 +1,30 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+}
+
+def getGitHash = { ->
+    try {
+        return providers.exec {
+            commandLine 'git', 'rev-parse', '--short', 'HEAD'
+            ignoreExitValue = true
+        }.standardOutput.asText.get().trim()
+    } catch (Exception ignored) {
+        return ""
+    }
+}
+
+def getGitTag = { ->
+    try {
+        return providers.exec {
+            commandLine 'git', 'describe', '--tags', '--exact-match'
+            ignoreExitValue = true
+        }.standardOutput.asText.get().trim()
+    } catch (Exception ignored) {
+        return ""
+    }
 }
 
 android {
@@ -13,6 +37,9 @@ android {
         targetSdk 34
         versionCode 1
         versionName "1.0"
+
+        buildConfigField "String", "GIT_HASH", "\"${getGitHash()}\""
+        buildConfigField "String", "GIT_TAG", "\"${getGitTag()}\""
     }
 
     buildTypes {
@@ -27,12 +54,15 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = '17'
-    }
-
     buildFeatures {
         viewBinding true
+        buildConfig true
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_17
     }
 }
 
@@ -41,6 +71,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
 
     // Encrypted storage for the GitHub token and repo config.
     implementation 'androidx.security:security-crypto:1.1.0-alpha06'
@@ -53,4 +84,7 @@ dependencies {
 
     // JSON handling for GitHub API request/response bodies.
     implementation 'org.json:json:20240303'
+
+    // AndroidSVG for rendering SVG vector diagrams from SPIKE projects
+    implementation 'com.caverock:androidsvg-aar:1.4'
 }

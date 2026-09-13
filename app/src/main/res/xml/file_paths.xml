@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Cache and storage directories where downloaded .llsp3 files are stored
+         before being opened by the SPIKE app. -->
+    <cache-path name="spike_cache" path="." />
+    <external-path name="external_files" path="." />
+    <external-cache-path name="external_cache" path="." />
+    <external-files-path name="external_app_files" path="." />
+</paths>

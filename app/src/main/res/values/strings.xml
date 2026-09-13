@@ -10,32 +10,115 @@
     <string name="label_repo">Repo name</string>
     <string name="label_branch">Branch</string>
     <string name="label_base_path">Folder in repo for robot code</string>
-    <string name="label_robot1">Name for Robot 1</string>
-    <string name="label_robot2">Name for Robot 2</string>
+    <string name="label_tablet_name">Tablet name</string>
+    <string name="label_team_roster">Team roster (comma-separated)</string>
+    <string name="label_robot_nicknames">Robot nicknames (optional, comma-separated)</string>
     <string name="save_settings">Save setup</string>
     <string name="test_connection">Test connection</string>
     <string name="settings_saved">Setup saved.</string>
+    <string name="need_connection_fields">Please enter Token, Repo owner, and Repo name first.</string>
+    <string name="need_setup_on_settings">Please fill in Token, Repo owner, Repo name, and Team roster.</string>
     <string name="hint_owner">e.g. masterpigg</string>
     <string name="hint_repo">e.g. final-first-lego-league</string>
     <string name="hint_branch">e.g. main</string>
     <string name="hint_base_path">e.g. robot-game</string>
+    <string name="hint_tablet_name">e.g. Tablet A, Dad\'s Tablet</string>
+    <string name="hint_team_roster">e.g. Fido, Whiskers, Polly, Bubbles, Coach Pigg</string>
+    <string name="hint_robot_nicknames">e.g. Robot Alpha, Robot Beta</string>
+
+    <!-- Security card -->
+    <string name="security_title">🔒 Security &amp; Coach Setup</string>
+    <string name="security_instructions"><![CDATA[
+<b>Creating a safe GitHub token:</b><br/><br/>
+1. GitHub → Profile → <b>Settings</b> → <b>Developer settings</b>.<br/>
+2. <b>Personal access tokens → Fine-grained tokens → Generate new token</b>.<br/>
+3. <b>Token name:</b> FLL Tablet - Robot Game Sync<br/>
+4. <b>Expiration:</b> End of season (e.g. 90 days).<br/>
+5. <b>Repository access:</b> Only select repositories → pick your team repo.<br/>
+6. <b>Permissions → Repository permissions:</b><br/>
+   • <b>Contents: Read and write</b> (allows pushing code/files).<br/>
+   • <b>Issues: Read and write</b> (allows Sticky Note Kanban board sync).<br/>
+   • <b>Metadata: Read-only</b> (auto-set, required).<br/>
+   • Everything else: <b>No access</b>.<br/>
+7. <b>Account permissions:</b> All <b>No access</b>.<br/><br/>
+
+<b>Why this is safe:</b><br/>
+• The token can only see ONE repo — your other repos are invisible.<br/>
+• No Administration permission — cannot delete/rename the repo.<br/>
+• GitHub blocks deleting the main branch — even without paid rulesets.<br/>
+• This app only uses forward commits — history can never be erased.<br/>
+• Token is encrypted on the tablet (Android Keystore).<br/>
+• Coach tip: run <tt>git pull</tt> on your laptop occasionally as a backup.
+    ]]></string>
 
     <!-- Share screen -->
     <string name="share_title">Save robot code to GitHub</string>
-    <string name="pick_robot">Which robot?</string>
-    <string name="robot_1">Robot 1</string>
-    <string name="robot_2">Robot 2</string>
+    <string name="label_project_name">Project name</string>
+    <string name="label_contributors">Who worked on this?</string>
+    <string name="label_robot_select">Which robot? (optional)</string>
+    <string name="label_no_robot">None</string>
     <string name="comment_label">What did you change? (required)</string>
     <string name="comment_hint">e.g. Tuned Run 1 gyro turn, coral arm clears the wall now</string>
     <string name="commit_and_push">Commit &amp; Push</string>
-    <string name="need_setup">Please open the app and finish setup first (token and repo).</string>
+    <string name="need_setup">Please open the app and finish setup first (token, repo, and team roster).</string>
     <string name="need_comment">Please add a short comment about what changed.</string>
-    <string name="need_robot">Please pick which robot this is.</string>
+    <string name="need_contributors">Please tap at least one name — who worked on this?</string>
     <string name="no_file">No file was shared. In the SPIKE app, tap Share and pick this app.</string>
     <string name="pushing">Pushing to GitHub…</string>
     <string name="push_success">Saved to GitHub!</string>
     <string name="push_failed">Push failed</string>
     <string name="view_commit">View on GitHub</string>
+    <string name="btn_done_team_code">Done — Open Team Code ➔</string>
+    <string name="btn_cancel_team_code">Back to Team Code</string>
+    <string name="code_preview_desc">Scratch Code Preview</string>
+    <string name="projects_selected">%d Projects Selected:</string>
     <string name="open_settings">Setup</string>
+
+    <!-- Kanban / Sticky Notes screen -->
+    <string name="kanban_title">📋 Team Kanban Board</string>
+    <string name="kanban_subtitle">Yellow sticky notes synced with GitHub Projects</string>
+    <string name="new_sticky_note">+ New Sticky Note 🟨</string>
+    <string name="column_todo">To-Do 📌</string>
+    <string name="column_doing">Doing 🛠️</string>
+    <string name="column_done">Done ✅</string>
+    <string name="btn_add_owner">+ Owner</string>
     <string name="done">Done</string>
+    <string name="linked_to_issue">Linked to #%d</string>
+
+    <!-- Conflict dialog -->
+    <string name="conflict_title">⚠️ Someone else updated \"%s\"!</string>
+    <string name="conflict_body">%s\n\nWhat would you like to do?</string>
+    <string name="conflict_overrule">Make This Latest</string>
+    <string name="conflict_copy">Save as New Copy</string>
+
+    <!-- Time Machine screen -->
+    <string name="time_machine_title">Team Code</string>
+    <string name="time_machine_empty">No projects found. Push some code from SPIKE first!</string>
+    <string name="open_in_spike">Open in SPIKE</string>
+    <string name="view_checkpoints">View Checkpoints ⏪</string>
+    <string name="loading_projects">Loading projects…</string>
+    <string name="loading_checkpoints">Loading checkpoints…</string>
+    <string name="checkpoint_today">TODAY %s</string>
+    <string name="checkpoint_yesterday">YESTERDAY %s</string>
+    <string name="open_this_version">⏪ Open this in SPIKE</string>
+    <string name="last_push">Last push: %1$s by %2$s</string>
+    <string name="link_issue_title">Link to GitHub Issue</string>
+    <string name="link_issue_hint">Issue number (e.g. 7)</string>
+    <string name="link_issue_save">Save</string>
+    <string name="link_issue_clear">Remove Link</string>
+    <string name="snap_notes">📷 Snap Notes / Drawing</string>
+
+    <!-- Sync prompt -->
+    <string name="sync_prompt_title">Welcome back!</string>
+    <string name="sync_prompt_message">Want to grab the latest code before you start? Someone may have updated things since last session.</string>
+    <string name="sync_prompt_yes">Yes, show me projects</string>
+    <string name="sync_prompt_no">No thanks, let\'s go</string>
+
+    <!-- Doc Upload screen -->
+    <string name="doc_upload_title">Save to Team GitHub</string>
+    <string name="doc_category_meeting">📋 Meeting Notes</string>
+    <string name="doc_category_design">🤖 Robot Design</string>
+    <string name="doc_category_innovation">💡 Innovation Project</string>
+    <string name="label_doc_title">Title / description</string>
+    <string name="hint_doc_title">e.g. Session 2 brainstorm, Coral arm sketch</string>
 </resources>
