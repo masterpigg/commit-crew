@@ -286,6 +286,35 @@ class GitHubClient(
         }
     }
 
+    /** Fetch map of label name -> hex color (#7B1FA2) for all labels in the repository. */
+    fun getRepoLabelColors(): Map<String, String> {
+        val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/labels?per_page=100"
+        val request = baseRequest(url).get().build()
+        val colors = mutableMapOf<String, String>()
+        try {
+            http.newCall(request).execute().use { resp ->
+                if (!resp.isSuccessful) return emptyMap()
+                val text = resp.body?.string().orEmpty()
+                val array = JSONArray(text)
+                for (i in 0 until array.length()) {
+                    val obj = array.getJSONObject(i)
+                    val name = obj.optString("name")
+                    val colorHex = obj.optString("color")
+                    if (name.isNotBlank() && colorHex.isNotBlank()) {
+                        val hex = "#${colorHex.removePrefix("#")}"
+                        colors[name.lowercase()] = hex
+                        if (name.startsWith("owner:", ignoreCase = true)) {
+                            colors[name.substring(6).trim().lowercase()] = hex
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            // Return empty map on failure
+        }
+        return colors
+    }
+
     /** One-time migration: Move all files from [oldFolder] to [newFolder] on GitHub. */
     fun migrateFolder(oldFolder: String, newFolder: String) {
         val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/contents/${encPath(oldFolder)}?ref=${enc(branch)}"

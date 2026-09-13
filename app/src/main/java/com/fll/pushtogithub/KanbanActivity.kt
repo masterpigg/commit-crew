@@ -25,6 +25,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.abs
 
 /**
  * Kid-friendly Yellow Sticky Note Kanban Board.
@@ -105,6 +106,35 @@ class KanbanActivity : AppCompatActivity() {
         }
     }
 
+    private var repoLabelColors = mapOf<String, String>()
+
+    private fun resolveOwnerColor(name: String, cardColors: Map<String, String> = emptyMap()): String {
+        val lower = name.lowercase().trim()
+
+        // 1. Check card label colors
+        val cardColor = cardColors[name] ?: cardColors[lower] ?: cardColors["owner:$lower"]
+        if (!cardColor.isNullOrBlank() && cardColor != "#1976D2") return cardColor
+
+        // 2. Check repo label colors from GitHub
+        val repoColor = repoLabelColors[lower] ?: repoLabelColors["owner:$lower"]
+        if (!repoColor.isNullOrBlank()) return repoColor
+
+        // 3. Fallback: Deterministic palette based on name hash so every member gets a distinct color
+        val palette = listOf(
+            "#7B1FA2", // Deep Purple
+            "#C2185B", // Deep Pink
+            "#D32F2F", // Red
+            "#388E3C", // Green
+            "#F57C00", // Orange
+            "#0097A7", // Cyan
+            "#8E24AA", // Violet
+            "#00897B", // Teal
+            "#5D4037"  // Brown
+        )
+        val index = abs(lower.hashCode()) % palette.size
+        return palette[index]
+    }
+
     private fun populateOwnerFilterChips() {
         val chipGroup = binding.ownerFilterChipGroup
         chipGroup.removeAllViews()
@@ -117,7 +147,7 @@ class KanbanActivity : AppCompatActivity() {
         chipGroup.addView(allChip)
 
         for (name in settings.teamRoster) {
-            val hexColor = allCards.firstNotNullOfOrNull { it.ownerColors[name] } ?: "#1976D2"
+            val hexColor = resolveOwnerColor(name)
 
             val chip = Chip(this).apply {
                 text = name
@@ -597,7 +627,7 @@ class KanbanActivity : AppCompatActivity() {
             // Render assigned owner chips with GitHub field/label colors
             b.ownerChips.removeAllViews()
             for (owner in card.owners) {
-                val hexColor = card.ownerColors[owner] ?: "#1976D2"
+                val hexColor = resolveOwnerColor(owner, card.ownerColors)
                 val chip = Chip(this@KanbanActivity).apply {
                     text = owner
                     textSize = 11f
