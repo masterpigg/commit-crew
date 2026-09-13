@@ -1,270 +1,276 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="20dp"
+    android:fillViewport="true"
     android:background="#FFFDE7">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/layoutTaskTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="What needs to be done?"
-        app:placeholderText="e.g. Build coral arm, Test gyro turn"
-        app:hintTextColor="#212121"
-        app:boxStrokeColor="#212121"
-        app:endIconMode="custom"
-        app:endIconDrawable="@android:drawable/ic_btn_speak_now"
-        app:endIconContentDescription="Voice input for title"
-        android:layout_marginBottom="12dp">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/inputTaskTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#111111"
-            android:textColorHint="#757575"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:inputType="textCapSentences" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- Editor Header Row: Label + Mode Toggle -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingBottom="4dp">
+        android:orientation="vertical"
+        android:padding="20dp">
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Notes / Details"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="#212121" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnTogglePreview"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:text="👁️ Preview"
-            android:textSize="12sp"
-            android:textColor="#212121"
-            android:padding="0dp" />
-
-    </LinearLayout>
-
-    <!-- Rich Text Formatting Buttons for Kids -->
-    <LinearLayout
-        android:id="@+id/formattingToolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingBottom="8dp">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnFormatHeading"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:text="📌 Heading"
-            android:textSize="11sp"
-            android:textColor="#212121"
-            app:strokeColor="#616161"
-            android:padding="0dp"
-            android:layout_marginEnd="6dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnFormatBold"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:text="B Bold"
-            android:textSize="11sp"
-            android:textColor="#212121"
-            app:strokeColor="#616161"
-            android:textStyle="bold"
-            android:padding="0dp"
-            android:layout_marginEnd="6dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnFormatChecklist"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:text="☑ Checklist"
-            android:textSize="11sp"
-            android:textColor="#212121"
-            app:strokeColor="#616161"
-            android:padding="0dp"
-            android:layout_marginEnd="6dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnFormatBullet"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="36dp"
-            android:text="• Bullet"
-            android:textSize="11sp"
-            android:textColor="#212121"
-            app:strokeColor="#616161"
-            android:padding="0dp" />
-
-    </LinearLayout>
-
-    <!-- Single Main Text Area Container -->
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp">
-
-        <!-- Editable Input Field -->
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/inputTaskBodyLayout"
+            android:id="@+id/layoutTaskTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:hint="What needs to be done?"
+            app:placeholderText="e.g. Build coral arm, Test gyro turn"
             app:hintTextColor="#212121"
             app:boxStrokeColor="#212121"
             app:endIconMode="custom"
             app:endIconDrawable="@android:drawable/ic_btn_speak_now"
-            app:endIconContentDescription="Voice input for notes">
+            app:endIconContentDescription="Voice input for title"
+            android:layout_marginBottom="12dp">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/inputTaskBody"
+                android:id="@+id/inputTaskTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="#111111"
                 android:textColorHint="#757575"
-                android:textSize="15sp"
-                android:minLines="4"
-                android:gravity="top"
-                android:inputType="textMultiLine|textCapSentences" />
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:inputType="textCapSentences" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Formatted View (Toggled via Preview button) -->
-        <TextView
-            android:id="@+id/textTaskBodyPreview"
+        <!-- Editor Header Row: Label + Mode Toggle -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="100dp"
-            android:background="#FFFFFF"
-            android:padding="12dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingBottom="4dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Notes / Details"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#212121" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTogglePreview"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="👁️ Preview"
+                android:textSize="12sp"
+                android:textColor="#212121"
+                android:padding="0dp" />
+
+        </LinearLayout>
+
+        <!-- Rich Text Formatting Buttons for Kids -->
+        <LinearLayout
+            android:id="@+id/formattingToolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="8dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFormatHeading"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="📌 Heading"
+                android:textSize="11sp"
+                android:textColor="#212121"
+                app:strokeColor="#616161"
+                android:padding="0dp"
+                android:layout_marginEnd="6dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFormatBold"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="B Bold"
+                android:textSize="11sp"
+                android:textColor="#212121"
+                app:strokeColor="#616161"
+                android:textStyle="bold"
+                android:padding="0dp"
+                android:layout_marginEnd="6dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFormatChecklist"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="☑ Checklist"
+                android:textSize="11sp"
+                android:textColor="#212121"
+                app:strokeColor="#616161"
+                android:padding="0dp"
+                android:layout_marginEnd="6dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnFormatBullet"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="• Bullet"
+                android:textSize="11sp"
+                android:textColor="#212121"
+                app:strokeColor="#616161"
+                android:padding="0dp" />
+
+        </LinearLayout>
+
+        <!-- Single Main Text Area Container -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <!-- Editable Input Field -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/inputTaskBodyLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:hintTextColor="#212121"
+                app:boxStrokeColor="#212121"
+                app:endIconMode="custom"
+                app:endIconDrawable="@android:drawable/ic_btn_speak_now"
+                app:endIconContentDescription="Voice input for notes">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/inputTaskBody"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#111111"
+                    android:textColorHint="#757575"
+                    android:textSize="15sp"
+                    android:minLines="3"
+                    android:gravity="top"
+                    android:inputType="textMultiLine|textCapSentences" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Formatted View (Toggled via Preview button) -->
+            <TextView
+                android:id="@+id/textTaskBodyPreview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="80dp"
+                android:background="#FFFFFF"
+                android:padding="12dp"
+                android:textSize="14sp"
+                android:textColor="#111111"
+                android:lineSpacingExtra="3dp"
+                android:visibility="gone" />
+
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Category / Workspace"
             android:textSize="14sp"
-            android:textColor="#111111"
-            android:lineSpacingExtra="3dp"
-            android:visibility="gone" />
-
-    </FrameLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Category / Workspace"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:textColor="#212121"
-        android:paddingBottom="6dp" />
-
-    <RadioGroup
-        android:id="@+id/categoryGroup"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="16dp">
-
-        <RadioButton
-            android:id="@+id/radioCatRobot"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="🤖 Robot"
-            android:textColor="#111111"
             android:textStyle="bold"
-            android:checked="true" />
+            android:textColor="#212121"
+            android:paddingBottom="6dp" />
 
-        <RadioButton
-            android:id="@+id/radioCatInnovation"
-            android:layout_width="0dp"
+        <RadioGroup
+            android:id="@+id/categoryGroup"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="💡 Innovation"
-            android:textColor="#111111"
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
 
-        <RadioButton
-            android:id="@+id/radioCatGeneral"
-            android:layout_width="0dp"
+            <RadioButton
+                android:id="@+id/radioCatRobot"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="🤖 Robot"
+                android:textColor="#111111"
+                android:textStyle="bold"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/radioCatInnovation"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="💡 Innovation"
+                android:textColor="#111111"
+                android:textStyle="bold" />
+
+            <RadioButton
+                android:id="@+id/radioCatGeneral"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="📋 General"
+                android:textColor="#111111"
+                android:textStyle="bold" />
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="📋 General"
-            android:textColor="#111111"
-            android:textStyle="bold" />
-    </RadioGroup>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Column / Status"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:textColor="#212121"
-        android:paddingBottom="6dp" />
-
-    <RadioGroup
-        android:id="@+id/columnGroup"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="16dp">
-
-        <RadioButton
-            android:id="@+id/radioTodo"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="To-Do 📌"
-            android:textColor="#111111"
+            android:text="Column / Status"
+            android:textSize="14sp"
             android:textStyle="bold"
-            android:checked="true" />
+            android:textColor="#212121"
+            android:paddingBottom="6dp" />
 
-        <RadioButton
-            android:id="@+id/radioDoing"
-            android:layout_width="0dp"
+        <RadioGroup
+            android:id="@+id/columnGroup"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Doing 🛠️"
-            android:textColor="#111111"
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
 
-        <RadioButton
-            android:id="@+id/radioDone"
-            android:layout_width="0dp"
+            <RadioButton
+                android:id="@+id/radioTodo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="To-Do 📌"
+                android:textColor="#111111"
+                android:textStyle="bold"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/radioDoing"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Doing 🛠️"
+                android:textColor="#111111"
+                android:textStyle="bold" />
+
+            <RadioButton
+                android:id="@+id/radioDone"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Done ✅"
+                android:textColor="#111111"
+                android:textStyle="bold" />
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Done ✅"
-            android:textColor="#111111"
-            android:textStyle="bold" />
-    </RadioGroup>
+            android:text="Who's working on this? (Owners)"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:paddingBottom="6dp" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Who's working on this? (Owners)"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:textColor="#212121"
-        android:paddingBottom="6dp" />
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/ownerChipsGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:singleSelection="false" />
 
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/ownerChipsGroup"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:singleSelection="false" />
-
-</LinearLayout>
+    </LinearLayout>
+</ScrollView>
