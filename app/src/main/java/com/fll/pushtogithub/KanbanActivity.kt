@@ -12,9 +12,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.RadioGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.ColorUtils
+import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.fll.pushtogithub.databinding.ActivityKanbanBinding
@@ -576,25 +578,44 @@ class KanbanActivity : AppCompatActivity() {
     }
 
     private fun setupRichTextToolbar(dialogView: View, inputEditText: EditText) {
+        val previewTextView = dialogView.findViewById<TextView>(R.id.textTaskBodyPreview)
         val btnHeading = dialogView.findViewById<View>(R.id.btnFormatHeading)
         val btnBold = dialogView.findViewById<View>(R.id.btnFormatBold)
         val btnChecklist = dialogView.findViewById<View>(R.id.btnFormatChecklist)
         val btnBullet = dialogView.findViewById<View>(R.id.btnFormatBullet)
 
+        val updatePreview = {
+            val text = inputEditText.text?.toString().orEmpty()
+            val rendered = MarkdownUtils.renderMarkdown(text)
+            if (rendered.isNotBlank() && previewTextView != null) {
+                previewTextView.text = rendered
+                previewTextView.visibility = View.VISIBLE
+            } else if (previewTextView != null) {
+                previewTextView.visibility = View.GONE
+            }
+        }
+
+        inputEditText.doAfterTextChanged { updatePreview() }
+        updatePreview()
+
         btnHeading?.setOnClickListener {
             insertFormatting(inputEditText, prefix = "### ", suffix = "", defaultText = "Heading")
+            updatePreview()
         }
 
         btnBold?.setOnClickListener {
             insertFormatting(inputEditText, prefix = "**", suffix = "**", defaultText = "bold text")
+            updatePreview()
         }
 
         btnChecklist?.setOnClickListener {
             insertFormatting(inputEditText, prefix = "- [ ] ", suffix = "", defaultText = "Task item")
+            updatePreview()
         }
 
         btnBullet?.setOnClickListener {
             insertFormatting(inputEditText, prefix = "- ", suffix = "", defaultText = "List item")
+            updatePreview()
         }
     }
 

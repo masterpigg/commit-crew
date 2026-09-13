@@ -28,10 +28,10 @@ object MarkdownUtils {
         md = md.replace(Regex("(?m)^\\s*[-*]\\s*\\[\\s*\\]\\s*"), "<b>☐</b> ")
         md = md.replace(Regex("(?m)^\\s*[-*]\\s*\\[[xX]\\]\\s*"), "<b>☑</b> ")
 
-        // Convert Markdown headers #, ##, ###
-        md = md.replace(Regex("(?m)^#\\s*(.*?)$"), "<b><font size=\"5\" color=\"#000000\">$1</font></b><br/>")
+        // Convert Markdown headers (MUST match ### first, then ##, then # so multi-hash headers are fully consumed)
+        md = md.replace(Regex("(?m)^###+\\s*(.*?)$"), "<b><font size=\"3\" color=\"#000000\">$1</font></b><br/>")
         md = md.replace(Regex("(?m)^##\\s*(.*?)$"), "<b><font size=\"4\" color=\"#000000\">$1</font></b><br/>")
-        md = md.replace(Regex("(?m)^###+\\s*(.*?)$"), "<b><font color=\"#000000\">$1</font></b><br/>")
+        md = md.replace(Regex("(?m)^#\\s*(.*?)$"), "<b><font size=\"5\" color=\"#000000\">$1</font></b><br/>")
 
         // Convert bullet lists
         md = md.replace(Regex("(?m)^\\s*[*\\-+]\t*"), "• ")
