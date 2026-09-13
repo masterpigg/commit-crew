@@ -1,12 +1,15 @@
 package com.fll.pushtogithub
 
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.IntentCompat
+import androidx.core.graphics.ColorUtils
 import androidx.lifecycle.lifecycleScope
 import com.fll.pushtogithub.databinding.ActivityShareBinding
 import com.google.android.material.chip.Chip
@@ -15,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.abs
 
 /**
  * Receives files via Android's share sheet (single or multiple).
@@ -145,16 +149,48 @@ class ShareActivity : AppCompatActivity() {
 
     // ── Chip population ──────────────────────────────────────────────────
 
+    private fun getOwnerColorHex(name: String): String {
+        val lower = name.lowercase().trim()
+        val defaultOptionsMap = mapOf(
+            "fido" to "#E53935",          // Red
+            "whiskers" to "#F57C00",         // Orange
+            "polly" to "#FFB300",           // Yellow
+            "bubbles" to "#43A047",            // Green
+            "nibbles" to "#1E88E5",          // Blue
+            "thumper" to "#8E24AA",         // Purple
+            "patches" to "#D81B60",        // Pink
+            "coach owl" to "#546E7A", // Slate
+            "coach pigg" to "#546E7A"      // Slate
+        )
+        val defaultColor = defaultOptionsMap[lower]
+        if (defaultColor != null) return defaultColor
+
+        val palette = listOf(
+            "#E53935", "#F57C00", "#FFB300", "#43A047",
+            "#1E88E5", "#8E24AA", "#D81B60", "#546E7A"
+        )
+        val index = abs(lower.hashCode()) % palette.size
+        return palette[index]
+    }
+
     private fun populateContributorChips() {
         val chipGroup = binding.contributorChips
         chipGroup.removeAllViews()
         val sessionSelection = settings.sessionContributors.toSet()
 
         for (name in settings.teamRoster) {
+            val hexColor = getOwnerColorHex(name)
             val chip = Chip(this).apply {
                 text = name
                 isCheckable = true
                 isChecked = name in sessionSelection
+
+                runCatching {
+                    val bg = Color.parseColor(hexColor)
+                    chipBackgroundColor = ColorStateList.valueOf(bg)
+                    val isDark = ColorUtils.calculateLuminance(bg) < 0.5
+                    setTextColor(if (isDark) Color.WHITE else Color.BLACK)
+                }
             }
             chipGroup.addView(chip)
         }
