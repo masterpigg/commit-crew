@@ -57,12 +57,6 @@ class DocUploadActivity : AppCompatActivity() {
         ActivityResultContracts.TakePicturePreview()
     ) { bitmap ->
         if (bitmap != null) {
-            binding.imagePreview.setImageBitmap(bitmap)
-            binding.imagePreview.visibility = View.VISIBLE
-            binding.textPreview.visibility = View.GONE
-            binding.fileTypeIcon.visibility = View.GONE
-            binding.actionOverlay.visibility = View.GONE
-
             val baos = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
             fileBytes = baos.toByteArray()
@@ -73,6 +67,9 @@ class DocUploadActivity : AppCompatActivity() {
             val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
             binding.inputDocTitle.setText("${today}_photo_$timeStamp")
             binding.buttonUpload.isEnabled = true
+            binding.actionOverlay.visibility = View.GONE
+
+            showPreview()
             showStatus("Photo captured! Ready to push.", isError = false)
         }
     }
