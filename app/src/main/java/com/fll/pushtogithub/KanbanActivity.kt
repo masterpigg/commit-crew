@@ -190,19 +190,23 @@ class KanbanActivity : AppCompatActivity() {
         }
     }
 
+    private lateinit var todoDragListener: View.OnDragListener
+    private lateinit var doingDragListener: View.OnDragListener
+    private lateinit var doneDragListener: View.OnDragListener
+
     private fun setupDragAndDropListeners() {
-        val todoListener = createColumnDragListener("todo", "#FFF176", "#FFF9C4")
-        val doingListener = createColumnDragListener("doing", "#FFD54F", "#FFE082")
-        val doneListener = createColumnDragListener("done", "#A5D6A7", "#C8E6C9")
+        todoDragListener = createColumnDragListener("todo", "#FFF176", "#FFF9C4")
+        doingDragListener = createColumnDragListener("doing", "#FFD54F", "#FFE082")
+        doneDragListener = createColumnDragListener("done", "#A5D6A7", "#C8E6C9")
 
-        binding.columnTodo.setOnDragListener(todoListener)
-        binding.recyclerTodo.setOnDragListener(todoListener)
+        binding.columnTodo.setOnDragListener(todoDragListener)
+        binding.recyclerTodo.setOnDragListener(todoDragListener)
 
-        binding.columnDoing.setOnDragListener(doingListener)
-        binding.recyclerDoing.setOnDragListener(doingListener)
+        binding.columnDoing.setOnDragListener(doingDragListener)
+        binding.recyclerDoing.setOnDragListener(doingDragListener)
 
-        binding.columnDone.setOnDragListener(doneListener)
-        binding.recyclerDone.setOnDragListener(doneListener)
+        binding.columnDone.setOnDragListener(doneDragListener)
+        binding.recyclerDone.setOnDragListener(doneDragListener)
     }
 
     private fun createColumnDragListener(
@@ -210,12 +214,11 @@ class KanbanActivity : AppCompatActivity() {
         activeColorHex: String,
         defaultColorHex: String
     ): View.OnDragListener {
-        return View.OnDragListener { view, event ->
-            val parentColumnView = when (view.id) {
-                R.id.columnTodo, R.id.recyclerTodo -> binding.columnTodo
-                R.id.columnDoing, R.id.recyclerDoing -> binding.columnDoing
-                R.id.columnDone, R.id.recyclerDone -> binding.columnDone
-                else -> view
+        return View.OnDragListener { _, event ->
+            val parentColumnView: View = when (columnName) {
+                "todo" -> binding.columnTodo
+                "doing" -> binding.columnDoing
+                else -> binding.columnDone
             }
 
             when (event.action) {
@@ -234,7 +237,7 @@ class KanbanActivity : AppCompatActivity() {
                     if (card != null && card.column != columnName) {
                         moveCardColumn(card, columnName)
                         Toast.makeText(
-                            this,
+                            this@KanbanActivity,
                             "Moved #${card.number} to ${columnName.replaceFirstChar { it.uppercase() }}",
                             Toast.LENGTH_SHORT
                         ).show()
@@ -609,6 +612,15 @@ class KanbanActivity : AppCompatActivity() {
                 b.textBody.visibility = View.GONE
             }
 
+            // Attach column drag listener to card item so drops anywhere in column (even on top of cards) succeed
+            val currentColumnListener = when (card.column) {
+                "todo" -> todoDragListener
+                "doing" -> doingDragListener
+                else -> doneDragListener
+            }
+            b.cardRoot.setOnDragListener(currentColumnListener)
+            holder.itemView.setOnDragListener(currentColumnListener)
+
             // Drag and Drop OnLongClickListener
             val startDrag: (View) -> Boolean = { v ->
                 v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
@@ -616,9 +628,10 @@ class KanbanActivity : AppCompatActivity() {
 
                 val clipData = ClipData.newPlainText("card_number", card.number.toString())
                 val shadowBuilder = View.DragShadowBuilder(b.cardRoot)
-                val success = v.startDragAndDrop(clipData, shadowBuilder, card, View.DRAG_FLAG_GLOBAL)
+                val success = b.cardRoot.startDragAndDrop(clipData, shadowBuilder, card, 0)
                 if (!success) {
-                    v.startDragAndDrop(clipData, shadowBuilder, card, 0)
+                    @Suppress("DEPRECATION")
+                    b.cardRoot.startDrag(clipData, shadowBuilder, card, 0)
                 }
                 true
             }
