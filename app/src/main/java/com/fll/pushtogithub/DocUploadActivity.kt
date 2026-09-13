@@ -236,13 +236,12 @@ class DocUploadActivity : AppCompatActivity() {
                 }
             }
 
-            // Launched from FAB (no shared content) — user will take a photo
+            // Launched from top nav (no shared content) — user will take a photo or pick a file
             else -> {
                 binding.imagePreview.visibility = View.GONE
-                binding.fileTypeIcon.text = "📷"
-                binding.fileTypeIcon.visibility = View.VISIBLE
-                // For now, user needs to share from Camera app. Future: in-app camera.
-                showStatus("Share a photo or file from another app, or tap 📷 in Camera and share here.", isError = false)
+                binding.fileTypeIcon.visibility = View.GONE
+                binding.textPreview.visibility = View.GONE
+                binding.actionOverlay.visibility = View.VISIBLE
             }
         }
     }
