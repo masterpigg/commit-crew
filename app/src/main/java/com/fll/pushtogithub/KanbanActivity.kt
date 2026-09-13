@@ -42,6 +42,14 @@ class KanbanActivity : AppCompatActivity() {
     private var selectedCategoryFilter = "all" // "all", "robot-game", "innovation-project", "general"
     private var selectedOwnerFilter: String? = null // null for All Owners, or specific owner name
 
+    private var isNavigating = false
+
+    override fun onResume() {
+        super.onResume()
+        isNavigating = false
+        binding.mainNavToggle.check(R.id.navTaskBoard)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityKanbanBinding.inflate(layoutInflater)
@@ -51,7 +59,8 @@ class KanbanActivity : AppCompatActivity() {
 
         binding.mainNavToggle.check(R.id.navTaskBoard)
         binding.mainNavToggle.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked && checkedId == R.id.navTeamCode) {
+            if (isChecked && checkedId == R.id.navTeamCode && !isNavigating) {
+                isNavigating = true
                 finish()
             }
         }
@@ -69,6 +78,17 @@ class KanbanActivity : AppCompatActivity() {
 
         setupDragAndDropListeners()
         setupFilterListeners()
+
+        // 1. Instant 0ms load from local TaskCache
+        val cached = TaskCache.get(this)
+        if (cached.isNotEmpty()) {
+            allCards.clear()
+            allCards.addAll(cached)
+            populateOwnerFilterChips()
+            renderColumns()
+        }
+
+        // 2. Background sync with GitHub
         loadCardsFromGitHub()
     }
 
@@ -97,10 +117,19 @@ class KanbanActivity : AppCompatActivity() {
         chipGroup.addView(allChip)
 
         for (name in settings.teamRoster) {
+            val hexColor = allCards.firstNotNullOfOrNull { it.ownerColors[name] } ?: "#1976D2"
+
             val chip = Chip(this).apply {
                 text = name
                 isCheckable = true
                 isChecked = selectedOwnerFilter.equals(name, ignoreCase = true)
+
+                runCatching {
+                    val bg = Color.parseColor(hexColor)
+                    chipBackgroundColor = ColorStateList.valueOf(bg)
+                    val isDark = ColorUtils.calculateLuminance(bg) < 0.5
+                    setTextColor(if (isDark) Color.WHITE else Color.BLACK)
+                }
             }
             chipGroup.addView(chip)
         }
@@ -210,10 +239,10 @@ class KanbanActivity : AppCompatActivity() {
                 settings.teamRoster = currentRoster
             }
 
-            populateOwnerFilterChips()
-
             allCards.clear()
             allCards.addAll(cards)
+            TaskCache.put(this@KanbanActivity, cards)
+            populateOwnerFilterChips()
             binding.progress.visibility = View.GONE
             renderColumns()
         }

@@ -58,6 +58,8 @@ class TimeMachineActivity : AppCompatActivity() {
     private var projectItems = mutableListOf<ProjectItem>()
     private var currentSortMode = "recent" // "recent", "name_asc", "name_desc"
 
+    private var isNavigating = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityTimeMachineBinding.inflate(layoutInflater)
@@ -68,8 +70,12 @@ class TimeMachineActivity : AppCompatActivity() {
         // ── Main Section Toggle ──────────────────────────────────────────
         binding.mainNavToggle.check(R.id.navTeamCode)
         binding.mainNavToggle.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked && checkedId == R.id.navTaskBoard) {
-                startActivity(Intent(this, KanbanActivity::class.java))
+            if (isChecked && checkedId == R.id.navTaskBoard && !isNavigating) {
+                isNavigating = true
+                val intent = Intent(this, KanbanActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                }
+                startActivity(intent)
             }
         }
 
@@ -120,6 +126,8 @@ class TimeMachineActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        isNavigating = false
+        binding.mainNavToggle.check(R.id.navTeamCode)
         if (settings.isConfigured) {
             loadProjects()
         }
@@ -255,25 +263,39 @@ class TimeMachineActivity : AppCompatActivity() {
             b.lastPushInfo.text = item.lastCommitSummary.ifBlank { "…" }
 
             val filePath = "${settings.basePath}/${project.name}/${project.name}.llsp3"
+            val cacheKey = "proj_${project.name}_${item.lastCommitDate.ifBlank { "latest" }}"
 
-            // Fetch preview image thumbnail (PNG or SVG) asynchronously
-            lifecycleScope.launch {
-                val imageBytes = withContext(Dispatchers.IO) {
-                    GitHubClient(
-                        token = settings.token,
-                        owner = settings.owner,
-                        repo = settings.repo,
-                        branch = settings.branch
-                    ).getProjectPreviewImage(settings.basePath, project.name)
+            // Check L1/L2 Image Cache first (Instant 0ms load!)
+            val cachedBitmap = ImageCache.get(this@TimeMachineActivity, cacheKey)
+            if (cachedBitmap != null) {
+                b.projectPreviewImage.setImageBitmap(cachedBitmap)
+                b.previewCard.visibility = View.VISIBLE
+                b.previewCard.setOnClickListener {
+                    showFullScreenImageDialog(project.name, cachedBitmap) {
+                        downloadAndOpen(project.name, filePath, null)
+                    }
                 }
-                if (imageBytes != null) {
-                    val bitmap = decodeImageBytes(imageBytes)
-                    if (bitmap != null) {
-                        b.projectPreviewImage.setImageBitmap(bitmap)
-                        b.previewCard.visibility = View.VISIBLE
-                        b.previewCard.setOnClickListener {
-                            showFullScreenImageDialog(project.name, bitmap) {
-                                downloadAndOpen(project.name, filePath, null)
+            } else {
+                // Fetch preview image thumbnail (PNG or SVG) asynchronously
+                lifecycleScope.launch {
+                    val imageBytes = withContext(Dispatchers.IO) {
+                        GitHubClient(
+                            token = settings.token,
+                            owner = settings.owner,
+                            repo = settings.repo,
+                            branch = settings.branch
+                        ).getProjectPreviewImage(settings.basePath, project.name)
+                    }
+                    if (imageBytes != null) {
+                        val bitmap = decodeImageBytes(imageBytes)
+                        if (bitmap != null) {
+                            ImageCache.put(this@TimeMachineActivity, cacheKey, bitmap)
+                            b.projectPreviewImage.setImageBitmap(bitmap)
+                            b.previewCard.visibility = View.VISIBLE
+                            b.previewCard.setOnClickListener {
+                                showFullScreenImageDialog(project.name, bitmap) {
+                                    downloadAndOpen(project.name, filePath, null)
+                                }
                             }
                         }
                     }
@@ -419,25 +441,39 @@ class TimeMachineActivity : AppCompatActivity() {
             }
             b.checkpointMessage.text = parseUserComment(commit.message)
 
-            // Fetch Scratch code preview diagram for this checkpoint SHA asynchronously
-            lifecycleScope.launch {
-                val imageBytes = withContext(Dispatchers.IO) {
-                    GitHubClient(
-                        token = settings.token,
-                        owner = settings.owner,
-                        repo = settings.repo,
-                        branch = settings.branch
-                    ).getProjectPreviewImageAtCommit(settings.basePath, projectName, commit.sha)
+            val cacheKey = "chk_${projectName}_${commit.sha}"
+            val cachedBitmap = ImageCache.get(this@TimeMachineActivity, cacheKey)
+            if (cachedBitmap != null) {
+                b.checkpointPreviewImage.setImageBitmap(cachedBitmap)
+                b.checkpointPreviewCard.visibility = View.VISIBLE
+                b.checkpointPreviewCard.setOnClickListener {
+                    val title = "$projectName (${formatRelativeDate(commit.date)})"
+                    showFullScreenImageDialog(title, cachedBitmap, getString(R.string.open_this_version)) {
+                        downloadAndOpen(projectName, filePath, commit.sha)
+                    }
                 }
-                if (imageBytes != null) {
-                    val bitmap = decodeImageBytes(imageBytes)
-                    if (bitmap != null) {
-                        b.checkpointPreviewImage.setImageBitmap(bitmap)
-                        b.checkpointPreviewCard.visibility = View.VISIBLE
-                        b.checkpointPreviewCard.setOnClickListener {
-                            val title = "$projectName (${formatRelativeDate(commit.date)})"
-                            showFullScreenImageDialog(title, bitmap, getString(R.string.open_this_version)) {
-                                downloadAndOpen(projectName, filePath, commit.sha)
+            } else {
+                // Fetch Scratch code preview diagram for this checkpoint SHA asynchronously
+                lifecycleScope.launch {
+                    val imageBytes = withContext(Dispatchers.IO) {
+                        GitHubClient(
+                            token = settings.token,
+                            owner = settings.owner,
+                            repo = settings.repo,
+                            branch = settings.branch
+                        ).getProjectPreviewImageAtCommit(settings.basePath, projectName, commit.sha)
+                    }
+                    if (imageBytes != null) {
+                        val bitmap = decodeImageBytes(imageBytes)
+                        if (bitmap != null) {
+                            ImageCache.put(this@TimeMachineActivity, cacheKey, bitmap)
+                            b.checkpointPreviewImage.setImageBitmap(bitmap)
+                            b.checkpointPreviewCard.visibility = View.VISIBLE
+                            b.checkpointPreviewCard.setOnClickListener {
+                                val title = "$projectName (${formatRelativeDate(commit.date)})"
+                                showFullScreenImageDialog(title, bitmap, getString(R.string.open_this_version)) {
+                                    downloadAndOpen(projectName, filePath, commit.sha)
+                                }
                             }
                         }
                     }
