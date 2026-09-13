@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
+import android.speech.RecognizerIntent
 import android.view.DragEvent
 import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
@@ -14,6 +15,7 @@ import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.ColorUtils
 import androidx.core.widget.doAfterTextChanged
@@ -23,6 +25,8 @@ import com.fll.pushtogithub.databinding.ActivityKanbanBinding
 import com.fll.pushtogithub.databinding.ItemStickyNoteBinding
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
+import com.google.android.material.textfield.TextInputLayout
+import java.util.Locale
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
@@ -395,6 +399,37 @@ class KanbanActivity : AppCompatActivity() {
             .show()
     }
 
+    private var activeVoiceTarget: EditText? = null
+
+    private val voiceRecognizerLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK && result.data != null) {
+            val matches = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            val spokenText = matches?.firstOrNull()?.trim()
+            if (!spokenText.isNullOrBlank() && activeVoiceTarget != null) {
+                val currentText = activeVoiceTarget?.text?.toString().orEmpty()
+                val updatedText = if (currentText.isBlank()) spokenText else "$currentText $spokenText"
+                activeVoiceTarget?.setText(updatedText)
+                activeVoiceTarget?.setSelection(updatedText.length)
+            }
+        }
+    }
+
+    private fun launchVoiceInput(targetEditText: EditText) {
+        activeVoiceTarget = targetEditText
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak into microphone…")
+        }
+        try {
+            voiceRecognizerLauncher.launch(intent)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Voice recognition is not available on this device.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun showNewStickyNoteDialog() {
         val dialogView = LayoutInflater.from(this).inflate(
             R.layout.dialog_new_sticky_note, null
@@ -402,9 +437,14 @@ class KanbanActivity : AppCompatActivity() {
 
         val inputTitle = dialogView.findViewById<EditText>(R.id.inputTaskTitle)
         val inputBody = dialogView.findViewById<EditText>(R.id.inputTaskBody)
+        val layoutTitle = dialogView.findViewById<TextInputLayout>(R.id.layoutTaskTitle)
+        val layoutBody = dialogView.findViewById<TextInputLayout>(R.id.inputTaskBodyLayout)
         val categoryGroup = dialogView.findViewById<RadioGroup>(R.id.categoryGroup)
         val columnGroup = dialogView.findViewById<RadioGroup>(R.id.columnGroup)
         val ownerChipsGroup = dialogView.findViewById<ChipGroup>(R.id.ownerChipsGroup)
+
+        layoutTitle?.setEndIconOnClickListener { launchVoiceInput(inputTitle) }
+        layoutBody?.setEndIconOnClickListener { launchVoiceInput(inputBody) }
 
         setupRichTextToolbar(dialogView, inputBody)
 
@@ -478,10 +518,15 @@ class KanbanActivity : AppCompatActivity() {
 
         val inputTitle = dialogView.findViewById<EditText>(R.id.inputTaskTitle)
         val inputBody = dialogView.findViewById<EditText>(R.id.inputTaskBody)
+        val layoutTitle = dialogView.findViewById<TextInputLayout>(R.id.layoutTaskTitle)
+        val layoutBody = dialogView.findViewById<TextInputLayout>(R.id.inputTaskBodyLayout)
         val categoryGroup = dialogView.findViewById<RadioGroup>(R.id.categoryGroup)
         val columnGroup = dialogView.findViewById<RadioGroup>(R.id.columnGroup)
         val ownerChipsGroup = dialogView.findViewById<ChipGroup>(R.id.ownerChipsGroup)
         val btnDelete = dialogView.findViewById<View>(R.id.buttonDeleteCard)
+
+        layoutTitle?.setEndIconOnClickListener { launchVoiceInput(inputTitle) }
+        layoutBody?.setEndIconOnClickListener { launchVoiceInput(inputBody) }
 
         setupRichTextToolbar(dialogView, inputBody)
 

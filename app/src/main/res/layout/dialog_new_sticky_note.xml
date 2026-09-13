@@ -8,12 +8,16 @@
     android:background="#FFFDE7">
 
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/layoutTaskTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="What needs to be done?"
         app:placeholderText="e.g. Build coral arm, Test gyro turn"
         app:hintTextColor="#212121"
         app:boxStrokeColor="#212121"
+        app:endIconMode="custom"
+        app:endIconDrawable="@android:drawable/ic_btn_speak_now"
+        app:endIconContentDescription="Voice input for title"
         android:layout_marginBottom="12dp">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -126,7 +130,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:hintTextColor="#212121"
-            app:boxStrokeColor="#212121">
+            app:boxStrokeColor="#212121"
+            app:endIconMode="custom"
+            app:endIconDrawable="@android:drawable/ic_btn_speak_now"
+            app:endIconContentDescription="Voice input for notes">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/inputTaskBody"

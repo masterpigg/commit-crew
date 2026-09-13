@@ -8,7 +8,10 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
+import android.speech.RecognizerIntent
 import android.view.View
+import android.widget.EditText
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.IntentCompat
@@ -92,6 +95,37 @@ class DocUploadActivity : AppCompatActivity() {
         }
     }
 
+    private var activeVoiceTarget: EditText? = null
+
+    private val voiceRecognizerLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK && result.data != null) {
+            val matches = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            val spokenText = matches?.firstOrNull()?.trim()
+            if (!spokenText.isNullOrBlank() && activeVoiceTarget != null) {
+                val currentText = activeVoiceTarget?.text?.toString().orEmpty()
+                val updatedText = if (currentText.isBlank()) spokenText else "$currentText $spokenText"
+                activeVoiceTarget?.setText(updatedText)
+                activeVoiceTarget?.setSelection(updatedText.length)
+            }
+        }
+    }
+
+    private fun launchVoiceInput(targetEditText: EditText) {
+        activeVoiceTarget = targetEditText
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak into microphone…")
+        }
+        try {
+            voiceRecognizerLauncher.launch(intent)
+        } catch (_: Exception) {
+            Toast.makeText(this, "Voice recognition is not available on this device.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         isNavigating = false
@@ -118,6 +152,14 @@ class DocUploadActivity : AppCompatActivity() {
 
         binding.imagePreview.setOnClickListener {
             binding.actionOverlay.visibility = View.VISIBLE
+        }
+
+        binding.layoutDocTitle.setEndIconOnClickListener {
+            launchVoiceInput(binding.inputDocTitle)
+        }
+
+        binding.layoutComment.setEndIconOnClickListener {
+            launchVoiceInput(binding.inputComment)
         }
 
         if (!settings.isConfigured) {
