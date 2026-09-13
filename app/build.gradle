@@ -87,4 +87,7 @@ dependencies {
 
     // AndroidSVG for rendering SVG vector diagrams from SPIKE projects
     implementation 'com.caverock:androidsvg-aar:1.4'
+
+    // Google ML Kit Text Recognition for transcribing handwritten notes & photos
+    implementation 'com.google.mlkit:text-recognition:16.0.1'
 }

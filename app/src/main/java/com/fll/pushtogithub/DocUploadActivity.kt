@@ -19,6 +19,9 @@ import androidx.core.graphics.ColorUtils
 import androidx.lifecycle.lifecycleScope
 import com.fll.pushtogithub.databinding.ActivityDocUploadBinding
 import com.google.android.material.chip.Chip
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -150,6 +153,10 @@ class DocUploadActivity : AppCompatActivity() {
             pickFileLauncher.launch("*/*")
         }
 
+        binding.btnTranscribeText.setOnClickListener {
+            transcribeTextFromImage()
+        }
+
         binding.imagePreview.setOnClickListener {
             binding.actionOverlay.visibility = View.VISIBLE
         }
@@ -241,51 +248,94 @@ class DocUploadActivity : AppCompatActivity() {
     }
 
     private fun showPreview() {
-        val bytes = fileBytes ?: return
+        val rawBytes = fileBytes ?: return
         val mimeType = detectedMimeType.orEmpty()
         val ext = originalFileName.substringAfterLast('.', "").lowercase()
 
         when {
             mimeType.startsWith("image/") || ext in listOf("png", "jpg", "jpeg", "gif", "bmp", "svg") -> {
-                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                // Perform smart image compression for large photos
+                fileBytes = ImageCompressor.compress(rawBytes)
+                val compressedBytes = fileBytes!!
+
+                val bitmap = BitmapFactory.decodeByteArray(compressedBytes, 0, compressedBytes.size)
                 if (bitmap != null) {
                     binding.imagePreview.setImageBitmap(bitmap)
                     binding.imagePreview.visibility = View.VISIBLE
                     binding.fileTypeIcon.visibility = View.GONE
                     binding.textPreview.visibility = View.GONE
+                    binding.btnTranscribeText.visibility = View.VISIBLE
                 } else {
                     binding.fileTypeIcon.text = "🖼️ $originalFileName"
                     binding.fileTypeIcon.visibility = View.VISIBLE
                     binding.imagePreview.visibility = View.GONE
                     binding.textPreview.visibility = View.GONE
+                    binding.btnTranscribeText.visibility = View.GONE
                 }
             }
             mimeType.contains("pdf") || ext == "pdf" -> {
                 binding.imagePreview.visibility = View.GONE
                 binding.textPreview.visibility = View.GONE
+                binding.btnTranscribeText.visibility = View.GONE
                 binding.fileTypeIcon.text = "📄 PDF Document\n$originalFileName"
                 binding.fileTypeIcon.visibility = View.VISIBLE
             }
             mimeType.contains("word") || mimeType.contains("document") || ext in listOf("doc", "docx", "pages") -> {
                 binding.imagePreview.visibility = View.GONE
                 binding.textPreview.visibility = View.GONE
+                binding.btnTranscribeText.visibility = View.GONE
                 binding.fileTypeIcon.text = "📝 Word / Text Document\n$originalFileName"
                 binding.fileTypeIcon.visibility = View.VISIBLE
             }
             mimeType.startsWith("text/") || ext in listOf("txt", "md", "csv", "json") -> {
-                val text = runCatching { String(bytes, Charsets.UTF_8) }.getOrDefault("")
+                val text = runCatching { String(rawBytes, Charsets.UTF_8) }.getOrDefault("")
                 binding.textPreview.text = "📝 $originalFileName:\n\n" + (if (text.length > 500) text.take(500) + "…" else text)
                 binding.textPreview.visibility = View.VISIBLE
                 binding.imagePreview.visibility = View.GONE
                 binding.fileTypeIcon.visibility = View.GONE
+                binding.btnTranscribeText.visibility = View.GONE
             }
             else -> {
                 binding.imagePreview.visibility = View.GONE
                 binding.textPreview.visibility = View.GONE
+                binding.btnTranscribeText.visibility = View.GONE
                 binding.fileTypeIcon.text = "📎 Attached File\n$originalFileName"
                 binding.fileTypeIcon.visibility = View.VISIBLE
             }
         }
+    }
+
+    private fun transcribeTextFromImage() {
+        val bytes = fileBytes ?: return
+        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: return
+
+        showStatus("Transcribing text from image…", isError = false)
+        binding.btnTranscribeText.isEnabled = false
+
+        val image = InputImage.fromBitmap(bitmap, 0)
+        val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+
+        recognizer.process(image)
+            .addOnSuccessListener { visionText ->
+                binding.btnTranscribeText.isEnabled = true
+                val resultText = visionText.text.trim()
+                if (resultText.isNotBlank()) {
+                    val currentComment = binding.inputComment.text?.toString().orEmpty()
+                    val newComment = if (currentComment.isBlank()) {
+                        "📝 Transcribed Notes:\n$resultText"
+                    } else {
+                        "$currentComment\n\n📝 Transcribed Notes:\n$resultText"
+                    }
+                    binding.inputComment.setText(newComment)
+                    showStatus("✨ Transcribed ${resultText.length} characters into notes!", isError = false)
+                } else {
+                    showStatus("No readable text found in this photo.", isError = false)
+                }
+            }
+            .addOnFailureListener { e ->
+                binding.btnTranscribeText.isEnabled = true
+                showStatus("Text recognition failed: ${e.message}", isError = true)
+            }
     }
 
     // ── Contributor chips ────────────────────────────────────────────────
