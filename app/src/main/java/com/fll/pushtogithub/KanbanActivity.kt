@@ -448,10 +448,18 @@ class KanbanActivity : AppCompatActivity() {
 
         setupRichTextToolbar(dialogView, inputBody)
 
+        ownerChipsGroup.removeAllViews()
         for (name in settings.teamRoster) {
+            val hexColor = resolveOwnerColor(name)
             val chip = Chip(this).apply {
                 text = name
                 isCheckable = true
+                runCatching {
+                    val bg = Color.parseColor(hexColor)
+                    chipBackgroundColor = ColorStateList.valueOf(bg)
+                    val isDark = ColorUtils.calculateLuminance(bg) < 0.5
+                    setTextColor(if (isDark) Color.WHITE else Color.BLACK)
+                }
             }
             ownerChipsGroup.addView(chip)
         }
@@ -548,10 +556,17 @@ class KanbanActivity : AppCompatActivity() {
 
         ownerChipsGroup.removeAllViews()
         for (name in settings.teamRoster) {
+            val hexColor = resolveOwnerColor(name)
             val chip = Chip(this).apply {
                 text = name
                 isCheckable = true
                 isChecked = card.owners.contains(name)
+                runCatching {
+                    val bg = Color.parseColor(hexColor)
+                    chipBackgroundColor = ColorStateList.valueOf(bg)
+                    val isDark = ColorUtils.calculateLuminance(bg) < 0.5
+                    setTextColor(if (isDark) Color.WHITE else Color.BLACK)
+                }
             }
             ownerChipsGroup.addView(chip)
         }
