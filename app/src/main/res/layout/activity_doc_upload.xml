@@ -77,12 +77,12 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <!-- Preview area for shared content -->
+            <!-- Preview area for shared or captured content -->
             <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="220dp"
                 android:layout_marginBottom="16dp"
-                android:background="@android:color/darker_gray">
+                android:background="#212121">
 
                 <ImageView
                     android:id="@+id/imagePreview"
@@ -97,6 +97,7 @@
                     android:layout_height="match_parent"
                     android:padding="16dp"
                     android:textSize="14sp"
+                    android:textColor="#FFFFFF"
                     android:visibility="gone" />
 
                 <TextView
@@ -106,6 +107,39 @@
                     android:gravity="center"
                     android:textSize="48sp"
                     android:visibility="gone" />
+
+                <!-- Action Overlay Buttons: Take Photo & Choose File -->
+                <LinearLayout
+                    android:id="@+id/actionOverlay"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:background="#60000000">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTakePhoto"
+                        style="@style/Widget.Material3.Button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="52dp"
+                        android:text="📷 Take Photo"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="12dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnPickFile"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="52dp"
+                        android:text="🖼️ Pick File"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="#FFFFFF"
+                        app:strokeColor="#FFFFFF" />
+
+                </LinearLayout>
             </FrameLayout>
 
             <!-- Category selection -->

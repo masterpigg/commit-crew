@@ -19,6 +19,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+import androidx.activity.result.contract.ActivityResultContracts
+import android.graphics.Bitmap
+import java.io.ByteArrayOutputStream
+
 /**
  * Handles uploading documentation files (photos, PDFs, text notes) to the team
  * repo. Triggered either from Android's share sheet (Camera, Photos, Keep,
@@ -40,6 +44,51 @@ class DocUploadActivity : AppCompatActivity() {
 
     private var isNavigating = false
 
+    private val takePhotoLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        if (bitmap != null) {
+            binding.imagePreview.setImageBitmap(bitmap)
+            binding.imagePreview.visibility = View.VISIBLE
+            binding.textPreview.visibility = View.GONE
+            binding.fileTypeIcon.visibility = View.GONE
+            binding.actionOverlay.visibility = View.GONE
+
+            val baos = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
+            fileBytes = baos.toByteArray()
+            detectedMimeType = "image/png"
+            val timeStamp = SimpleDateFormat("HHmmss", Locale.US).format(Date())
+            originalFileName = "photo_$timeStamp.png"
+
+            val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+            binding.inputDocTitle.setText("${today}_photo_$timeStamp")
+            binding.buttonUpload.isEnabled = true
+            showStatus("Photo captured! Ready to push.", isError = false)
+        }
+    }
+
+    private val pickFileLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            sharedFileUri = uri
+            detectedMimeType = contentResolver.getType(uri) ?: "image/*"
+            originalFileName = resolveFileName(uri)
+            runCatching {
+                fileBytes = contentResolver.openInputStream(uri)?.use { it.readBytes() }
+            }
+            if (fileBytes != null) {
+                showPreview()
+                val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                binding.inputDocTitle.setText("${today}_$originalFileName")
+                binding.buttonUpload.isEnabled = true
+                showStatus("File loaded! Ready to push.", isError = false)
+            }
+            binding.actionOverlay.visibility = View.GONE
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         isNavigating = false
@@ -55,6 +104,18 @@ class DocUploadActivity : AppCompatActivity() {
 
         setupPrimaryNavToggle()
         binding.buttonDone.setOnClickListener { finish() }
+
+        binding.btnTakePhoto.setOnClickListener {
+            takePhotoLauncher.launch(null)
+        }
+
+        binding.btnPickFile.setOnClickListener {
+            pickFileLauncher.launch("*/*")
+        }
+
+        binding.imagePreview.setOnClickListener {
+            binding.actionOverlay.visibility = View.VISIBLE
+        }
 
         if (!settings.isConfigured) {
             showStatus(getString(R.string.need_setup), isError = true)
