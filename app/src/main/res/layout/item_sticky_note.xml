@@ -11,8 +11,8 @@
     app:cardBackgroundColor="#FFFDE7"
     app:cardCornerRadius="10dp"
     app:cardElevation="3dp"
-    app:strokeColor="#FFE082"
-    app:strokeWidth="1dp">
+    app:strokeColor="#CCCCCC"
+    app:strokeWidth="1.5dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -31,14 +31,14 @@
                 android:id="@+id/textNumber"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="#FFE082"
+                android:background="#212121"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
                 android:paddingTop="2dp"
                 android:paddingBottom="2dp"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                android:textColor="#5D4037"
+                android:textColor="#FFFFFF"
                 android:layout_marginEnd="8dp" />
 
             <TextView
@@ -46,18 +46,18 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textSize="15sp"
+                android:textSize="16sp"
                 android:textStyle="bold"
-                android:textColor="#3E2723" />
+                android:textColor="#111111" />
 
             <TextView
                 android:id="@+id/dragHandle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="⋮⋮"
-                android:textSize="18sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="#8D6E63"
+                android:textColor="#424242"
                 android:paddingStart="4dp"
                 android:paddingEnd="4dp" />
 
@@ -67,8 +67,9 @@
             android:id="@+id/textBody"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="13sp"
-            android:textColor="#4E342E"
+            android:textSize="14sp"
+            android:textColor="#111111"
+            android:lineSpacingExtra="3dp"
             android:visibility="gone"
             android:paddingBottom="8dp" />
 
@@ -92,8 +93,9 @@
                 android:layout_width="0dp"
                 android:layout_height="36dp"
                 android:layout_weight="1"
-                android:textSize="11sp"
-                android:textColor="#5D4037"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#212121"
                 android:padding="0dp"
                 android:visibility="gone" />
 
@@ -103,8 +105,9 @@
                 android:layout_width="0dp"
                 android:layout_height="36dp"
                 android:layout_weight="1"
-                android:textSize="11sp"
-                android:textColor="#5D4037"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#212121"
                 android:text="@string/btn_add_owner"
                 android:padding="0dp" />
 
@@ -114,8 +117,9 @@
                 android:layout_width="0dp"
                 android:layout_height="36dp"
                 android:layout_weight="1"
-                android:textSize="11sp"
-                android:textColor="#5D4037"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#212121"
                 android:padding="0dp"
                 android:visibility="gone" />
 

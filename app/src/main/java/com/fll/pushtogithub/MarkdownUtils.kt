@@ -9,7 +9,7 @@ import android.text.SpannedString
  * Utility for formatting and rendering text for kids in the app.
  *
  * Renders Markdown headers (#), checklists (☐ / ☑), bold, italic,
- * and lists while handling null/blank values.
+ * and lists in crisp, high-contrast, bold styling.
  */
 object MarkdownUtils {
 
@@ -25,13 +25,13 @@ object MarkdownUtils {
             .replace(Regex("(?i)^null\\s*"), "")
 
         // Convert Markdown checklists [ ] and [x]
-        md = md.replace(Regex("(?m)^\\s*[-*]\\s*\\[\\s*\\]\\s*"), "☐ ")
-        md = md.replace(Regex("(?m)^\\s*[-*]\\s*\\[[xX]\\]\\s*"), "☑ ")
+        md = md.replace(Regex("(?m)^\\s*[-*]\\s*\\[\\s*\\]\\s*"), "<b>☐</b> ")
+        md = md.replace(Regex("(?m)^\\s*[-*]\\s*\\[[xX]\\]\\s*"), "<b>☑</b> ")
 
         // Convert Markdown headers #, ##, ###
-        md = md.replace(Regex("(?m)^#\\s*(.*?)$"), "<b><font size=\"5\">$1</font></b><br/>")
-        md = md.replace(Regex("(?m)^##\\s*(.*?)$"), "<b><font size=\"4\">$1</font></b><br/>")
-        md = md.replace(Regex("(?m)^###+\\s*(.*?)$"), "<b>$1</b><br/>")
+        md = md.replace(Regex("(?m)^#\\s*(.*?)$"), "<b><font size=\"5\" color=\"#000000\">$1</font></b><br/>")
+        md = md.replace(Regex("(?m)^##\\s*(.*?)$"), "<b><font size=\"4\" color=\"#000000\">$1</font></b><br/>")
+        md = md.replace(Regex("(?m)^###+\\s*(.*?)$"), "<b><font color=\"#000000\">$1</font></b><br/>")
 
         // Convert bullet lists
         md = md.replace(Regex("(?m)^\\s*[*\\-+]\t*"), "• ")
@@ -40,16 +40,15 @@ object MarkdownUtils {
         md = md.replace(Regex("\\*\\*(.*?)\\*\\*"), "<b>$1</b>")
         md = md.replace(Regex("\\*(.*?)\\*"), "<i>$1</i>")
         md = md.replace(Regex("_(.*?)_"), "<i>$1</i>")
-        md = md.replace(Regex("`([^`]+)`"), "<tt>$1</tt>")
 
         // Convert newlines to HTML breaks
         md = md.replace("\n", "<br/>")
 
         return if (Build.VERSION.SDK_INT >= 24) {
-            Html.fromHtml(md, Html.FROM_HTML_MODE_COMPACT)
+            Html.fromHtml("<font color=\"#111111\">$md</font>", Html.FROM_HTML_MODE_COMPACT)
         } else {
             @Suppress("DEPRECATION")
-            Html.fromHtml(md)
+            Html.fromHtml("<font color=\"#111111\">$md</font>")
         }
     }
 
