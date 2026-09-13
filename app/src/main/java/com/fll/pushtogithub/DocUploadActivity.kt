@@ -4,7 +4,11 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
+import android.graphics.Paint
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
@@ -303,12 +307,13 @@ class DocUploadActivity : AppCompatActivity() {
 
     private fun transcribeTextFromImage() {
         val bytes = fileBytes ?: return
-        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: return
+        val rawBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: return
 
-        showStatus("Transcribing text from image…", isError = false)
+        showStatus("Sharpening image & transcribing handwriting…", isError = false)
         binding.btnTranscribeText.isEnabled = false
 
-        val image = InputImage.fromBitmap(bitmap, 0)
+        val enhancedBitmap = enhanceHandwritingBitmap(rawBitmap)
+        val image = InputImage.fromBitmap(enhancedBitmap, 0)
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
         recognizer.process(image)
@@ -323,15 +328,40 @@ class DocUploadActivity : AppCompatActivity() {
                         "$currentComment\n\n📝 Transcribed Notes:\n$resultText"
                     }
                     binding.inputComment.setText(newComment)
-                    showStatus("✨ Transcribed ${resultText.length} characters into notes!", isError = false)
+                    showStatus("✨ Transcribed ${resultText.length} characters from notes!", isError = false)
                 } else {
-                    showStatus("No readable text found in this photo.", isError = false)
+                    showStatus("No readable text found. Try holding camera closer or using 🎙️ voice input.", isError = false)
                 }
             }
             .addOnFailureListener { e ->
                 binding.btnTranscribeText.isEnabled = true
                 showStatus("Text recognition failed: ${e.message}", isError = true)
             }
+    }
+
+    private fun enhanceHandwritingBitmap(src: Bitmap): Bitmap {
+        val width = src.width
+        val height = src.height
+        val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bmp)
+
+        val colorMatrix = ColorMatrix().apply {
+            set(
+                floatArrayOf(
+                    1.8f, 0f, 0f, 0f, -80f,
+                    0f, 1.8f, 0f, 0f, -80f,
+                    0f, 0f, 1.8f, 0f, -80f,
+                    0f, 0f, 0f, 1f, 0f
+                )
+            )
+        }
+
+        val paint = Paint().apply {
+            colorFilter = ColorMatrixColorFilter(colorMatrix)
+        }
+
+        canvas.drawBitmap(src, 0f, 0f, paint)
+        return bmp
     }
 
     // ── Contributor chips ────────────────────────────────────────────────
