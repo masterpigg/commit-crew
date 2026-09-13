@@ -21,6 +21,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.fll.pushtogithub.databinding.ActivityKanbanBinding
 import com.fll.pushtogithub.databinding.ItemStickyNoteBinding
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -578,44 +579,47 @@ class KanbanActivity : AppCompatActivity() {
     }
 
     private fun setupRichTextToolbar(dialogView: View, inputEditText: EditText) {
+        val inputLayout = dialogView.findViewById<View>(R.id.inputTaskBodyLayout)
         val previewTextView = dialogView.findViewById<TextView>(R.id.textTaskBodyPreview)
+        val btnToggle = dialogView.findViewById<MaterialButton>(R.id.btnTogglePreview)
         val btnHeading = dialogView.findViewById<View>(R.id.btnFormatHeading)
         val btnBold = dialogView.findViewById<View>(R.id.btnFormatBold)
         val btnChecklist = dialogView.findViewById<View>(R.id.btnFormatChecklist)
         val btnBullet = dialogView.findViewById<View>(R.id.btnFormatBullet)
 
-        val updatePreview = {
-            val text = inputEditText.text?.toString().orEmpty()
-            val rendered = MarkdownUtils.renderMarkdown(text)
-            if (rendered.isNotBlank() && previewTextView != null) {
-                previewTextView.text = rendered
-                previewTextView.visibility = View.VISIBLE
-            } else if (previewTextView != null) {
-                previewTextView.visibility = View.GONE
+        var isPreviewMode = false
+
+        btnToggle?.setOnClickListener {
+            isPreviewMode = !isPreviewMode
+            if (isPreviewMode) {
+                val text = inputEditText.text?.toString().orEmpty()
+                val rendered = MarkdownUtils.renderMarkdown(text)
+                previewTextView?.text = if (rendered.isNotBlank()) rendered else "(No description)"
+                previewTextView?.visibility = View.VISIBLE
+                inputLayout?.visibility = View.GONE
+                btnToggle.text = "✏️ Edit"
+            } else {
+                previewTextView?.visibility = View.GONE
+                inputLayout?.visibility = View.VISIBLE
+                btnToggle.text = "👁️ Preview"
+                inputEditText.requestFocus()
             }
         }
 
-        inputEditText.doAfterTextChanged { updatePreview() }
-        updatePreview()
-
         btnHeading?.setOnClickListener {
             insertFormatting(inputEditText, prefix = "### ", suffix = "", defaultText = "Heading")
-            updatePreview()
         }
 
         btnBold?.setOnClickListener {
             insertFormatting(inputEditText, prefix = "**", suffix = "**", defaultText = "bold text")
-            updatePreview()
         }
 
         btnChecklist?.setOnClickListener {
             insertFormatting(inputEditText, prefix = "- [ ] ", suffix = "", defaultText = "Task item")
-            updatePreview()
         }
 
         btnBullet?.setOnClickListener {
             insertFormatting(inputEditText, prefix = "- ", suffix = "", defaultText = "List item")
-            updatePreview()
         }
     }
 
