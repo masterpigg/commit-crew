@@ -70,12 +70,23 @@ class TimeMachineActivity : AppCompatActivity() {
         // ── Main Section Toggle ──────────────────────────────────────────
         binding.mainNavToggle.check(R.id.navTeamCode)
         binding.mainNavToggle.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked && checkedId == R.id.navTaskBoard && !isNavigating) {
-                isNavigating = true
-                val intent = Intent(this, KanbanActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            if (isChecked && !isNavigating) {
+                when (checkedId) {
+                    R.id.navSnapNotes -> {
+                        isNavigating = true
+                        val intent = Intent(this, DocUploadActivity::class.java).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                        }
+                        startActivity(intent)
+                    }
+                    R.id.navTaskBoard -> {
+                        isNavigating = true
+                        val intent = Intent(this, KanbanActivity::class.java).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                        }
+                        startActivity(intent)
+                    }
                 }
-                startActivity(intent)
             }
         }
 
@@ -100,11 +111,6 @@ class TimeMachineActivity : AppCompatActivity() {
                 else -> "recent"
             }
             sortAndRenderProjects()
-        }
-
-        // ── FAB → Doc Upload ─────────────────────────────────────────────
-        binding.fabSnapNotes.setOnClickListener {
-            startActivity(Intent(this, DocUploadActivity::class.java))
         }
 
         // ── Swipe to refresh ─────────────────────────────────────────────

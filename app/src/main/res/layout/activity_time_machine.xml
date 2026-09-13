@@ -18,7 +18,7 @@
             app:titleTextColor="@color/white"
             app:menu="@menu/time_machine_menu" />
 
-        <!-- Primary Section Toggle: Team Code vs Task Board -->
+        <!-- Primary Section Toggle: Team Code vs Snap Notes vs Task Board -->
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/mainNavToggle"
             android:layout_width="match_parent"
@@ -38,7 +38,19 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:text="🤖 Team Code"
-                android:textSize="15sp"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                app:strokeColor="@android:color/white" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/navSnapNotes"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="📸 Snap Notes"
+                android:textSize="13sp"
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
                 app:strokeColor="@android:color/white" />
@@ -50,7 +62,7 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:text="📋 Task Board"
-                android:textSize="15sp"
+                android:textSize="13sp"
                 android:textStyle="bold"
                 android:textColor="@android:color/white"
                 app:strokeColor="@android:color/white" />
@@ -162,14 +174,5 @@
 
         </LinearLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/fabSnapNotes"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        android:text="@string/snap_notes"
-        app:icon="@android:drawable/ic_menu_camera" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

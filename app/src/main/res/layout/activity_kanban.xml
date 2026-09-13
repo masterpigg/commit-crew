@@ -35,7 +35,19 @@
             android:layout_height="48dp"
             android:layout_weight="1"
             android:text="🤖 Team Code"
-            android:textSize="15sp"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            app:strokeColor="@android:color/white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/navSnapNotes"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="📸 Snap Notes"
+            android:textSize="13sp"
             android:textStyle="bold"
             android:textColor="@android:color/white"
             app:strokeColor="@android:color/white" />
@@ -47,7 +59,7 @@
             android:layout_height="48dp"
             android:layout_weight="1"
             android:text="📋 Task Board"
-            android:textSize="15sp"
+            android:textSize="13sp"
             android:textStyle="bold"
             android:textColor="@android:color/white"
             app:strokeColor="@android:color/white" />

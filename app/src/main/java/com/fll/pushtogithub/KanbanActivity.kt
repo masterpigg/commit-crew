@@ -63,9 +63,23 @@ class KanbanActivity : AppCompatActivity() {
 
         binding.mainNavToggle.check(R.id.navTaskBoard)
         binding.mainNavToggle.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked && checkedId == R.id.navTeamCode && !isNavigating) {
-                isNavigating = true
-                finish()
+            if (isChecked && !isNavigating) {
+                when (checkedId) {
+                    R.id.navTeamCode -> {
+                        isNavigating = true
+                        val intent = Intent(this, TimeMachineActivity::class.java).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                        }
+                        startActivity(intent)
+                    }
+                    R.id.navSnapNotes -> {
+                        isNavigating = true
+                        val intent = Intent(this, DocUploadActivity::class.java).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                        }
+                        startActivity(intent)
+                    }
+                }
             }
         }
 

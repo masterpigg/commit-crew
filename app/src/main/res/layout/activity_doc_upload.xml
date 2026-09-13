@@ -10,10 +10,60 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
-        app:navigationIcon="@android:drawable/ic_menu_revert"
-        app:navigationIconTint="@android:color/white"
         app:title="@string/doc_upload_title"
-        app:titleTextColor="@android:color/white" />
+        app:titleTextColor="@android:color/white"
+        app:menu="@menu/time_machine_menu" />
+
+    <!-- Primary Section Toggle: Team Code vs Snap Notes vs Task Board -->
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/mainNavToggle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="8dp"
+        android:background="?attr/colorPrimary"
+        app:singleSelection="true"
+        app:selectionRequired="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/navTeamCode"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="🤖 Team Code"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            app:strokeColor="@android:color/white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/navSnapNotes"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="📸 Snap Notes"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            app:strokeColor="@android:color/white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/navTaskBoard"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="📋 Task Board"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            app:strokeColor="@android:color/white" />
+
+    </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <ScrollView
         android:layout_width="match_parent"

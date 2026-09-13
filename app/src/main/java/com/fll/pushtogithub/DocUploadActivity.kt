@@ -38,6 +38,14 @@ class DocUploadActivity : AppCompatActivity() {
     private var fileBytes: ByteArray? = null
     private var detectedMimeType: String? = null
 
+    private var isNavigating = false
+
+    override fun onResume() {
+        super.onResume()
+        isNavigating = false
+        binding.mainNavToggle.check(R.id.navSnapNotes)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDocUploadBinding.inflate(layoutInflater)
@@ -45,7 +53,7 @@ class DocUploadActivity : AppCompatActivity() {
 
         settings = Settings(this)
 
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        setupPrimaryNavToggle()
         binding.buttonDone.setOnClickListener { finish() }
 
         if (!settings.isConfigured) {
@@ -311,5 +319,39 @@ class DocUploadActivity : AppCompatActivity() {
     private fun setLoading(loading: Boolean) {
         binding.progress.visibility = if (loading) View.VISIBLE else View.GONE
         binding.buttonUpload.isEnabled = !loading
+    }
+
+    private fun setupPrimaryNavToggle() {
+        binding.mainNavToggle.check(R.id.navSnapNotes)
+        binding.mainNavToggle.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked && !isNavigating) {
+                when (checkedId) {
+                    R.id.navTeamCode -> {
+                        isNavigating = true
+                        val intent = Intent(this, TimeMachineActivity::class.java).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                        }
+                        startActivity(intent)
+                    }
+                    R.id.navTaskBoard -> {
+                        isNavigating = true
+                        val intent = Intent(this, KanbanActivity::class.java).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                        }
+                        startActivity(intent)
+                    }
+                }
+            }
+        }
+
+        binding.toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.action_settings -> {
+                    startActivity(Intent(this, SettingsActivity::class.java))
+                    true
+                }
+                else -> false
+            }
+        }
     }
 }
