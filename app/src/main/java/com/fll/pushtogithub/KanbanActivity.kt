@@ -122,6 +122,7 @@ class KanbanActivity : AppCompatActivity() {
         }
         populateOwnerFilterChips()
         populateCoreValueFilterChips()
+        updateFilterButtonLabels()
 
         // 2. Background sync with GitHub
         if (!settings.isConfigured) {
@@ -132,7 +133,101 @@ class KanbanActivity : AppCompatActivity() {
         }
     }
 
+    private enum class FilterType { CATEGORY, WORKER, CORE_VALUE }
+    private var activeFilterType: FilterType? = null
+
+    private fun toggleFilterRow(type: FilterType) {
+        if (activeFilterType == type) {
+            closeFilterRow()
+        } else {
+            activeFilterType = type
+            binding.filterTriggersLayout.visibility = View.GONE
+            binding.expandedCategoryLayout.visibility = if (type == FilterType.CATEGORY) View.VISIBLE else View.GONE
+            binding.expandedWorkerLayout.visibility = if (type == FilterType.WORKER) View.VISIBLE else View.GONE
+            binding.expandedCoreValueLayout.visibility = if (type == FilterType.CORE_VALUE) View.VISIBLE else View.GONE
+            binding.filterScrollView.smoothScrollTo(0, 0)
+        }
+    }
+
+    private fun closeFilterRow() {
+        activeFilterType = null
+        binding.filterTriggersLayout.visibility = View.VISIBLE
+        binding.expandedCategoryLayout.visibility = View.GONE
+        binding.expandedWorkerLayout.visibility = View.GONE
+        binding.expandedCoreValueLayout.visibility = View.GONE
+        binding.filterScrollView.smoothScrollTo(0, 0)
+    }
+
+    private fun updateFilterButtonLabels() {
+        // 1. Category
+        val catText = when (selectedCategoryFilter) {
+            "robot-game" -> "🤖 Robot Game ▾"
+            "innovation-project" -> "💡 Innovation ▾"
+            "general" -> "📋 General ▾"
+            else -> "All Categories ▾"
+        }
+        binding.btnFilterCategory.text = catText
+        if (selectedCategoryFilter != "all") {
+            binding.btnFilterCategory.chipBackgroundColor = ColorStateList.valueOf(Color.parseColor("#424242"))
+            binding.btnFilterCategory.setTextColor(Color.WHITE)
+        } else {
+            binding.btnFilterCategory.chipBackgroundColor = null
+            binding.btnFilterCategory.setTextColor(Color.parseColor("#212121"))
+        }
+
+        // 2. Worker
+        if (selectedOwnerFilter.isNullOrBlank()) {
+            binding.btnFilterWorker.text = "All Workers ▾"
+            binding.btnFilterWorker.chipBackgroundColor = null
+            binding.btnFilterWorker.setTextColor(Color.parseColor("#212121"))
+        } else {
+            binding.btnFilterWorker.text = "👤 $selectedOwnerFilter ▾"
+            val colorHex = resolveOwnerColor(selectedOwnerFilter!!)
+            val baseColor = runCatching { Color.parseColor(colorHex) }.getOrDefault(Color.parseColor("#1976D2"))
+            binding.btnFilterWorker.chipBackgroundColor = ColorStateList.valueOf(baseColor)
+            binding.btnFilterWorker.setTextColor(Color.WHITE)
+        }
+
+        // 3. Core Value
+        if (selectedCoreValueFilter.isNullOrBlank()) {
+            binding.btnFilterCoreValue.text = "All Core Values ▾"
+            binding.btnFilterCoreValue.chipBackgroundColor = null
+            binding.btnFilterCoreValue.setTextColor(Color.parseColor("#212121"))
+        } else {
+            binding.btnFilterCoreValue.text = "⭐ $selectedCoreValueFilter ▾"
+            val cv = CoreValue.entries.find { it.displayName.equals(selectedCoreValueFilter, ignoreCase = true) }
+            val hexColor = cv?.hexColor ?: "#F57C00"
+            val baseColor = runCatching { Color.parseColor(hexColor) }.getOrDefault(Color.parseColor("#F57C00"))
+            binding.btnFilterCoreValue.chipBackgroundColor = ColorStateList.valueOf(baseColor)
+            binding.btnFilterCoreValue.setTextColor(Color.WHITE)
+        }
+
+        // 4. Clear button
+        val hasActiveFilter = selectedCategoryFilter != "all" || !selectedOwnerFilter.isNullOrBlank() || !selectedCoreValueFilter.isNullOrBlank()
+        binding.btnClearFilters.visibility = if (hasActiveFilter) View.VISIBLE else View.GONE
+    }
+
     private fun setupFilterListeners() {
+        binding.btnFilterCategory.setOnClickListener { toggleFilterRow(FilterType.CATEGORY) }
+        binding.btnFilterWorker.setOnClickListener { toggleFilterRow(FilterType.WORKER) }
+        binding.btnFilterCoreValue.setOnClickListener { toggleFilterRow(FilterType.CORE_VALUE) }
+
+        binding.btnCloseCategory.setOnClickListener { closeFilterRow() }
+        binding.btnCloseWorker.setOnClickListener { closeFilterRow() }
+        binding.btnCloseCoreValue.setOnClickListener { closeFilterRow() }
+
+        binding.btnClearFilters.setOnClickListener {
+            selectedCategoryFilter = "all"
+            selectedOwnerFilter = null
+            selectedCoreValueFilter = null
+            binding.categoryFilterChipGroup.check(R.id.chipCatAll)
+            populateOwnerFilterChips()
+            populateCoreValueFilterChips()
+            updateFilterButtonLabels()
+            closeFilterRow()
+            renderColumns()
+        }
+
         binding.categoryFilterChipGroup.setOnCheckedStateChangeListener { _, checkedIds ->
             if (checkedIds.isEmpty()) return@setOnCheckedStateChangeListener
             selectedCategoryFilter = when (checkedIds[0]) {
@@ -141,7 +236,15 @@ class KanbanActivity : AppCompatActivity() {
                 R.id.chipCatGeneral -> "general"
                 else -> "all"
             }
+            updateFilterButtonLabels()
+            closeFilterRow()
             renderColumns()
+        }
+
+        for (i in 0 until binding.categoryFilterChipGroup.childCount) {
+            binding.categoryFilterChipGroup.getChildAt(i).setOnClickListener {
+                closeFilterRow()
+            }
         }
     }
 
@@ -217,6 +320,12 @@ class KanbanActivity : AppCompatActivity() {
             text = "All Workers"
             isCheckable = true
             isChecked = selectedOwnerFilter == null
+            setOnClickListener {
+                selectedOwnerFilter = null
+                updateFilterButtonLabels()
+                closeFilterRow()
+                renderColumns()
+            }
         }
         chipGroup.addView(allChip)
 
@@ -225,6 +334,12 @@ class KanbanActivity : AppCompatActivity() {
             val chip = Chip(this).apply {
                 text = name
                 styleSelectableChip(this, hexColor, isCheckedByDefault = selectedOwnerFilter.equals(name, ignoreCase = true))
+                setOnClickListener {
+                    selectedOwnerFilter = name
+                    updateFilterButtonLabels()
+                    closeFilterRow()
+                    renderColumns()
+                }
             }
             chipGroup.addView(chip)
         }
@@ -237,6 +352,8 @@ class KanbanActivity : AppCompatActivity() {
                 val text = chip?.text?.toString()
                 selectedOwnerFilter = if (text == "All Workers" || text == "All Owners" || text.isNullOrBlank()) null else text
             }
+            updateFilterButtonLabels()
+            closeFilterRow()
             renderColumns()
         }
     }
@@ -249,6 +366,12 @@ class KanbanActivity : AppCompatActivity() {
             text = "All Core Values"
             isCheckable = true
             isChecked = selectedCoreValueFilter == null
+            setOnClickListener {
+                selectedCoreValueFilter = null
+                updateFilterButtonLabels()
+                closeFilterRow()
+                renderColumns()
+            }
         }
         chipGroup.addView(allChip)
 
@@ -256,6 +379,12 @@ class KanbanActivity : AppCompatActivity() {
             val chip = Chip(this).apply {
                 text = cv.displayName
                 styleSelectableChip(this, cv.hexColor, isCheckedByDefault = selectedCoreValueFilter.equals(cv.displayName, ignoreCase = true))
+                setOnClickListener {
+                    selectedCoreValueFilter = cv.displayName
+                    updateFilterButtonLabels()
+                    closeFilterRow()
+                    renderColumns()
+                }
             }
             chipGroup.addView(chip)
         }
@@ -268,6 +397,8 @@ class KanbanActivity : AppCompatActivity() {
                 val text = chip?.text?.toString()
                 selectedCoreValueFilter = if (text == "All Core Values" || text.isNullOrBlank()) null else text
             }
+            updateFilterButtonLabels()
+            closeFilterRow()
             renderColumns()
         }
     }
@@ -382,6 +513,7 @@ class KanbanActivity : AppCompatActivity() {
             TaskCache.put(this@KanbanActivity, result.cards)
             populateOwnerFilterChips()
             populateCoreValueFilterChips()
+            updateFilterButtonLabels()
             binding.progress.visibility = View.GONE
             renderColumns()
         }
