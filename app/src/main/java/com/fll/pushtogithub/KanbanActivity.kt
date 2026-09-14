@@ -444,6 +444,22 @@ class KanbanActivity : AppCompatActivity() {
         }
     }
 
+    private fun toggleAllKids(chipGroup: ChipGroup) {
+        val nonCoachChips = mutableListOf<Chip>()
+        for (i in 0 until chipGroup.childCount) {
+            val chip = chipGroup.getChildAt(i) as? Chip ?: continue
+            val text = chip.text.toString().trim()
+            if (!text.contains("coach", ignoreCase = true)) {
+                nonCoachChips.add(chip)
+            }
+        }
+        val allSelected = nonCoachChips.isNotEmpty() && nonCoachChips.all { it.isChecked }
+        val targetState = !allSelected
+        for (chip in nonCoachChips) {
+            chip.isChecked = targetState
+        }
+    }
+
     private fun showOwnerSelectionDialog(card: GitHubClient.KanbanCard) {
         val roster = settings.teamRoster
         if (roster.isEmpty()) {
@@ -451,19 +467,35 @@ class KanbanActivity : AppCompatActivity() {
             return
         }
 
-        val selectedIndexes = roster.map { card.owners.contains(it) }.toBooleanArray()
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_select_workers, null)
+        val ownerChipsGroup = dialogView.findViewById<ChipGroup>(R.id.ownerChipsGroup)
+        val btnToggleAllKids = dialogView.findViewById<MaterialButton>(R.id.btnToggleAllKids)
+
+        ownerChipsGroup.removeAllViews()
+        for (name in roster) {
+            val hexColor = resolveOwnerColor(name)
+            val chip = Chip(this).apply {
+                text = name
+                styleSelectableChip(this, hexColor, isCheckedByDefault = card.owners.contains(name))
+            }
+            ownerChipsGroup.addView(chip)
+        }
+
+        btnToggleAllKids?.setOnClickListener {
+            toggleAllKids(ownerChipsGroup)
+        }
 
         MaterialAlertDialogBuilder(this)
             .setTitle("Assign Worker(s) to #${card.number}")
-            .setMultiChoiceItems(roster.toTypedArray(), selectedIndexes) { _, which, isChecked ->
-                val name = roster[which]
-                if (isChecked) {
-                    if (!card.owners.contains(name)) card.owners.add(name)
-                } else {
-                    card.owners.remove(name)
-                }
-            }
+            .setView(dialogView)
             .setPositiveButton("Save Worker(s)") { _, _ ->
+                val selectedOwners = mutableListOf<String>()
+                for (i in 0 until ownerChipsGroup.childCount) {
+                    val chip = ownerChipsGroup.getChildAt(i) as? Chip ?: continue
+                    if (chip.isChecked) selectedOwners.add(chip.text.toString())
+                }
+                card.owners.clear()
+                card.owners.addAll(selectedOwners)
                 renderColumns()
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
@@ -585,6 +617,11 @@ class KanbanActivity : AppCompatActivity() {
             ownerChipsGroup.addView(chip)
         }
 
+        val btnToggleAllKids = dialogView.findViewById<MaterialButton>(R.id.btnToggleAllKids)
+        btnToggleAllKids?.setOnClickListener {
+            toggleAllKids(ownerChipsGroup)
+        }
+
         MaterialAlertDialogBuilder(this)
             .setTitle("🟨 New Task")
             .setView(dialogView)
@@ -691,6 +728,11 @@ class KanbanActivity : AppCompatActivity() {
                 styleSelectableChip(this, hexColor, isCheckedByDefault = card.owners.contains(name))
             }
             ownerChipsGroup.addView(chip)
+        }
+
+        val btnToggleAllKids = dialogView.findViewById<MaterialButton>(R.id.btnToggleAllKids)
+        btnToggleAllKids?.setOnClickListener {
+            toggleAllKids(ownerChipsGroup)
         }
 
         val coreValueChipsGroup = dialogView.findViewById<ChipGroup>(R.id.coreValueChipsGroup)
