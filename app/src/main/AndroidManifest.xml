@@ -30,9 +30,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PushToGitHub">
 
-        <!-- Time Machine is the launcher entry point. -->
+        <!-- Kanban Sticky Notes Activity (Default Landing Screen) -->
         <activity
-            android:name=".TimeMachineActivity"
+            android:name=".KanbanActivity"
             android:exported="true"
             android:label="@string/app_name">
             <intent-filter>
@@ -41,11 +41,11 @@
             </intent-filter>
         </activity>
 
-        <!-- Kanban Sticky Notes Activity -->
+        <!-- Time Machine / Team Code Activity -->
         <activity
-            android:name=".KanbanActivity"
+            android:name=".TimeMachineActivity"
             android:exported="false"
-            android:label="@string/kanban_title" />
+            android:label="@string/app_name" />
 
         <!-- Settings / configuration screen. Reachable from toolbar menu. -->
         <activity

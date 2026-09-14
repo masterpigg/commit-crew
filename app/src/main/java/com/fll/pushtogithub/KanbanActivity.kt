@@ -124,7 +124,12 @@ class KanbanActivity : AppCompatActivity() {
         populateCoreValueFilterChips()
 
         // 2. Background sync with GitHub
-        loadCardsFromGitHub()
+        if (!settings.isConfigured) {
+            startActivity(Intent(this, SettingsActivity::class.java))
+            Toast.makeText(this, getString(R.string.need_setup), Toast.LENGTH_LONG).show()
+        } else {
+            loadCardsFromGitHub()
+        }
     }
 
     private fun setupFilterListeners() {
