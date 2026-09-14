@@ -1,5 +1,6 @@
 package com.fll.pushtogithub
 
+import com.fll.pushtogithub.shared.CoreValue
 import android.content.ClipData
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -452,6 +453,24 @@ class KanbanActivity : AppCompatActivity() {
 
         setupRichTextToolbar(dialogView, inputBody)
 
+        val coreValueChipsGroup = dialogView.findViewById<ChipGroup>(R.id.coreValueChipsGroup)
+        if (coreValueChipsGroup != null) {
+            coreValueChipsGroup.removeAllViews()
+            for (cv in CoreValue.entries) {
+                val chip = Chip(this).apply {
+                    text = cv.displayName
+                    isCheckable = true
+                    runCatching {
+                        val bg = Color.parseColor(cv.hexColor)
+                        chipBackgroundColor = ColorStateList.valueOf(bg)
+                        val isDark = ColorUtils.calculateLuminance(bg) < 0.5
+                        setTextColor(if (isDark) Color.WHITE else Color.BLACK)
+                    }
+                }
+                coreValueChipsGroup.addView(chip)
+            }
+        }
+
         ownerChipsGroup.removeAllViews()
         for (name in settings.teamRoster) {
             val hexColor = resolveOwnerColor(name)
@@ -498,6 +517,14 @@ class KanbanActivity : AppCompatActivity() {
                     if (chip.isChecked) selectedOwners.add(chip.text.toString())
                 }
 
+                val selectedCoreValues = mutableListOf<String>()
+                if (coreValueChipsGroup != null) {
+                    for (i in 0 until coreValueChipsGroup.childCount) {
+                        val chip = coreValueChipsGroup.getChildAt(i) as? Chip ?: continue
+                        if (chip.isChecked) selectedCoreValues.add(chip.text.toString())
+                    }
+                }
+
                 binding.progress.visibility = View.VISIBLE
                 lifecycleScope.launch {
                     val newCard = withContext(Dispatchers.IO) {
@@ -506,7 +533,7 @@ class KanbanActivity : AppCompatActivity() {
                             owner = settings.owner,
                             repo = settings.repo,
                             branch = settings.branch
-                        ).createKanbanCard(title, body, column, category, selectedOwners)
+                        ).createKanbanCard(title, body, column, category, selectedOwners, selectedCoreValues)
                     }
 
                     binding.progress.visibility = View.GONE

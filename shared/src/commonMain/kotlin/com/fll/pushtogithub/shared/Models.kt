@@ -27,6 +27,7 @@ data class KanbanCard(
     val owners: MutableList<String>,
     val ownerColors: MutableMap<String, String> = mutableMapOf(),
     var category: String = "general", // "robot-game", "innovation-project", "general"
+    val coreValues: MutableList<String> = mutableListOf(),
     var projectItemId: String? = null,
     var projectId: String? = null,
     var statusFieldId: String? = null,

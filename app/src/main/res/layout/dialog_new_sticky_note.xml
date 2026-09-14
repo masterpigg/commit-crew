@@ -270,6 +270,23 @@
             android:id="@+id/ownerChipsGroup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:singleSelection="false" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="FIRST Core Values Demonstrated"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:paddingBottom="6dp" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/coreValueChipsGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             app:singleSelection="false" />
 
     </LinearLayout>

@@ -88,9 +88,25 @@
                 android:id="@+id/robotChips"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
+                android:layout_marginBottom="16dp"
                 app:singleSelection="true"
                 app:selectionRequired="false" />
+
+            <!-- Core Values Chips -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="FIRST Core Values Demonstrated"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:paddingBottom="8dp" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/coreValueChips"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                app:singleSelection="false" />
 
             <!-- Comment -->
             <com.google.android.material.textfield.TextInputLayout

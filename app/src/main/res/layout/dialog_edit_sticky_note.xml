@@ -191,93 +191,109 @@
                 android:textColor="#111111"
                 android:textStyle="bold" />
 
-            <RadioButton
-                android:id="@+id/radioCatInnovation"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="💡 Innovation"
-                android:textColor="#111111"
-                android:textStyle="bold" />
-
-            <RadioButton
-                android:id="@+id/radioCatGeneral"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="📋 General"
-                android:textColor="#111111"
-                android:textStyle="bold" />
-        </RadioGroup>
-
-        <TextView
-            android:layout_width="match_parent"
+        <RadioButton
+            android:id="@+id/radioCatInnovation"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Column / Status"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="#212121"
-            android:paddingBottom="6dp" />
+            android:layout_weight="1"
+            android:text="💡 Innovation"
+            android:textColor="#111111"
+            android:textStyle="bold" />
 
-        <RadioGroup
-            android:id="@+id/columnGroup"
-            android:layout_width="match_parent"
+        <RadioButton
+            android:id="@+id/radioCatGeneral"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
+            android:layout_weight="1"
+            android:text="📋 General"
+            android:textColor="#111111"
+            android:textStyle="bold" />
+    </RadioGroup>
 
-            <RadioButton
-                android:id="@+id/radioTodo"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="To-Do 📌"
-                android:textColor="#111111"
-                android:textStyle="bold" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Column / Status"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="#212121"
+        android:paddingBottom="6dp" />
 
-            <RadioButton
-                android:id="@+id/radioDoing"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Doing 🛠️"
-                android:textColor="#111111"
-                android:textStyle="bold" />
+    <RadioGroup
+        android:id="@+id/columnGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp">
 
-            <RadioButton
-                android:id="@+id/radioDone"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Done ✅"
-                android:textColor="#111111"
-                android:textStyle="bold" />
-        </RadioGroup>
-
-        <TextView
-            android:layout_width="match_parent"
+        <RadioButton
+            android:id="@+id/radioTodo"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Who's working on this? (Owners)"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="#212121"
-            android:paddingBottom="6dp" />
+            android:layout_weight="1"
+            android:text="To-Do 📌"
+            android:textColor="#111111"
+            android:textStyle="bold" />
 
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/ownerChipsGroup"
-            android:layout_width="match_parent"
+        <RadioButton
+            android:id="@+id/radioDoing"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:singleSelection="false" />
+            android:layout_weight="1"
+            android:text="Doing 🛠️"
+            android:textColor="#111111"
+            android:textStyle="bold" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonDeleteCard"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="match_parent"
+        <RadioButton
+            android:id="@+id/radioDone"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="🗑️ Delete Task"
-            android:textColor="#D32F2F"
-            app:strokeColor="#D32F2F" />
+            android:layout_weight="1"
+            android:text="Done ✅"
+            android:textColor="#111111"
+            android:textStyle="bold" />
+    </RadioGroup>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Who's working on this? (Owners)"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="#212121"
+        android:paddingBottom="6dp" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/ownerChipsGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:singleSelection="false" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="FIRST Core Values Demonstrated"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="#212121"
+        android:paddingBottom="6dp" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/coreValueChipsGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:singleSelection="false" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonDeleteCard"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="🗑️ Delete Task"
+        android:textColor="#D32F2F"
+        app:strokeColor="#D32F2F" />
 
     </LinearLayout>
 </ScrollView>

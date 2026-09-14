@@ -1,5 +1,6 @@
 package com.fll.pushtogithub
 
+import com.fll.pushtogithub.shared.CoreValue
 import android.util.Base64
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -65,6 +66,7 @@ class GitHubClient(
         val owners: MutableList<String>,
         val ownerColors: MutableMap<String, String> = mutableMapOf(),
         var category: String = "general", // "robot-game", "innovation-project", "general"
+        val coreValues: MutableList<String> = mutableListOf(),
         var projectItemId: String? = null,
         var projectId: String? = null,
         var statusFieldId: String? = null,
@@ -471,6 +473,15 @@ class GitHubClient(
         ensureLabelExists("todo", "F57F17", "Kanban Column: To-Do")
         ensureLabelExists("doing", "E65100", "Kanban Column: Doing")
         ensureLabelExists("done", "2E7D32", "Kanban Column: Done")
+        ensureCoreValueLabelsExist()
+    }
+
+    /** Ensure required Core Value labels exist on GitHub. */
+    fun ensureCoreValueLabelsExist() {
+        for (cv in CoreValue.entries) {
+            val hex = cv.hexColor.removePrefix("#")
+            ensureLabelExists("core-value:${cv.labelKey}", hex, "FLL Core Value: ${cv.displayName}")
+        }
     }
 
     /** Execute a GraphQL query against GitHub's GraphQL API v4. */
@@ -614,6 +625,7 @@ class GitHubClient(
                     val labelNames = mutableListOf<String>()
                     val owners = mutableListOf<String>()
                     val ownerColors = mutableMapOf<String, String>()
+                    val coreValues = mutableListOf<String>()
 
                     for (j in 0 until labelsArray.length()) {
                         val lblObj = labelsArray.getJSONObject(j)
@@ -622,6 +634,11 @@ class GitHubClient(
                         val hex = if (colorHex.isNotBlank()) "#${colorHex.removePrefix("#")}" else "#1976D2"
 
                         labelNames.add(lbl.lowercase())
+
+                        val cv = CoreValue.fromLabel(lbl)
+                        if (cv != null) {
+                            coreValues.add(cv.displayName)
+                        }
 
                         if (lbl.startsWith("owner:", ignoreCase = true)) {
                             val ownerName = lbl.substring(6).trim()
@@ -644,7 +661,7 @@ class GitHubClient(
                         }
                     }
 
-                    // Extract owners from issue body (e.g. "Owner: Fido, Whiskers")
+                    // Extract owners and core values from issue body
                     if (body.isNotBlank()) {
                         val match = Regex("(?i)owners?:\\s*([^\\r\\n]+)").find(body)
                         if (match != null) {
@@ -652,6 +669,17 @@ class GitHubClient(
                             for (n in names) {
                                 if (n.isNotBlank() && !owners.contains(n)) {
                                     owners.add(n)
+                                }
+                            }
+                        }
+
+                        val cvMatch = Regex("(?i)core values?:\\s*([^\\r\\n]+)").find(body)
+                        if (cvMatch != null) {
+                            val names = cvMatch.groupValues[1].split(",", ";").map { it.trim() }
+                            for (n in names) {
+                                val cv = CoreValue.entries.find { it.displayName == n || it.displayName.contains(n) }
+                                if (cv != null && !coreValues.contains(cv.displayName)) {
+                                    coreValues.add(cv.displayName)
                                 }
                             }
                         }
@@ -683,7 +711,8 @@ class GitHubClient(
                             column = detectedColumn,
                             owners = owners.distinct().toMutableList(),
                             ownerColors = ownerColors,
-                            category = detectedCategory
+                            category = detectedCategory,
+                            coreValues = coreValues.distinct().toMutableList()
                         )
                     )
                 }
@@ -695,7 +724,14 @@ class GitHubClient(
     }
 
     /** Create a new Kanban task / GitHub issue. */
-    fun createKanbanCard(title: String, body: String, column: String, category: String, owners: List<String>): KanbanCard? {
+    fun createKanbanCard(
+        title: String,
+        body: String,
+        column: String,
+        category: String,
+        owners: List<String>,
+        coreValues: List<String> = emptyList()
+    ): KanbanCard? {
         val labels = mutableListOf<String>()
         labels.add(column.lowercase())
         labels.add(category.lowercase())
@@ -703,9 +739,17 @@ class GitHubClient(
             labels.add("owner:$ownerName")
             labels.add(ownerName)
         }
+        for (cvName in coreValues) {
+            val cv = CoreValue.entries.find { it.displayName == cvName || it.displayName.contains(cvName) }
+            if (cv != null) {
+                labels.add("core-value:${cv.labelKey}")
+            }
+        }
 
-        val ownerHeader = if (owners.isNotEmpty()) "Owner: ${owners.joinToString(", ")}\n\n" else ""
-        val fullBody = if (body.isNotBlank()) "$ownerHeader$body" else ownerHeader.trim()
+        val ownerHeader = if (owners.isNotEmpty()) "Owner: ${owners.joinToString(", ")}\n" else ""
+        val cvHeader = if (coreValues.isNotEmpty()) "Core Values: ${coreValues.joinToString(", ")}\n" else ""
+        val header = "$cvHeader$ownerHeader".trim()
+        val fullBody = if (header.isNotBlank()) "$header\n\n$body" else body
 
         val json = JSONObject().apply {
             put("title", title)
@@ -730,7 +774,9 @@ class GitHubClient(
                     state = obj.optString("state"),
                     column = column.lowercase(),
                     owners = owners.toMutableList(),
-                    category = category.lowercase()
+                    ownerColors = mutableMapOf(),
+                    category = category.lowercase(),
+                    coreValues = coreValues.toMutableList()
                 )
             }
         } catch (e: Exception) {
@@ -743,8 +789,16 @@ class GitHubClient(
         return updateKanbanCardFull(number, "", "", column, category, owners)
     }
 
-    /** Full update for a Kanban card's title, body, column, category, and owners. */
-    fun updateKanbanCardFull(number: Int, title: String, body: String, column: String, category: String, owners: List<String>): Boolean {
+    /** Full update for a Kanban card's title, body, column, category, owners, and core values. */
+    fun updateKanbanCardFull(
+        number: Int,
+        title: String,
+        body: String,
+        column: String,
+        category: String,
+        owners: List<String>,
+        coreValues: List<String> = emptyList()
+    ): Boolean {
         val labels = mutableListOf<String>()
         labels.add(column.lowercase())
         if (category.isNotBlank()) labels.add(category.lowercase())
@@ -752,11 +806,19 @@ class GitHubClient(
             labels.add("owner:$ownerName")
             labels.add(ownerName)
         }
+        for (cvName in coreValues) {
+            val cv = CoreValue.entries.find { it.displayName == cvName || it.displayName.contains(cvName) }
+            if (cv != null) {
+                labels.add("core-value:${cv.labelKey}")
+            }
+        }
 
         val state = if (column.lowercase() == "done") "closed" else "open"
-        val ownerHeader = if (owners.isNotEmpty()) "Owner: ${owners.joinToString(", ")}\n\n" else ""
-        val cleanBody = body.replace(Regex("(?i)^owner:.*?\\n+"), "").trim()
-        val fullBody = if (cleanBody.isNotBlank()) "$ownerHeader$cleanBody" else ownerHeader.trim()
+        val ownerHeader = if (owners.isNotEmpty()) "Owner: ${owners.joinToString(", ")}\n" else ""
+        val cvHeader = if (coreValues.isNotEmpty()) "Core Values: ${coreValues.joinToString(", ")}\n" else ""
+        val header = "$cvHeader$ownerHeader".trim()
+        val cleanBody = body.replace(Regex("(?i)^(owner|core values?):.*?\\n+"), "").trim()
+        val fullBody = if (header.isNotBlank()) "$header\n\n$cleanBody" else cleanBody
 
         val json = JSONObject().apply {
             if (title.isNotBlank()) put("title", title)
