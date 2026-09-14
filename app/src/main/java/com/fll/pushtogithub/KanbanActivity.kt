@@ -53,6 +53,7 @@ class KanbanActivity : AppCompatActivity() {
 
     private var selectedCategoryFilter = "all" // "all", "robot-game", "innovation-project", "general"
     private var selectedOwnerFilter: String? = null // null for All Owners, or specific owner name
+    private var selectedCoreValueFilter: String? = null // null for All Core Values, or specific Core Value
 
     private var isNavigating = false
 
@@ -117,9 +118,10 @@ class KanbanActivity : AppCompatActivity() {
         if (cached.isNotEmpty()) {
             allCards.clear()
             allCards.addAll(cached)
-            populateOwnerFilterChips()
             renderColumns()
         }
+        populateOwnerFilterChips()
+        populateCoreValueFilterChips()
 
         // 2. Background sync with GitHub
         loadCardsFromGitHub()
@@ -234,6 +236,37 @@ class KanbanActivity : AppCompatActivity() {
         }
     }
 
+    private fun populateCoreValueFilterChips() {
+        val chipGroup = binding.coreValueFilterChipGroup
+        chipGroup.removeAllViews()
+
+        val allChip = Chip(this).apply {
+            text = "All Core Values"
+            isCheckable = true
+            isChecked = selectedCoreValueFilter == null
+        }
+        chipGroup.addView(allChip)
+
+        for (cv in CoreValue.entries) {
+            val chip = Chip(this).apply {
+                text = cv.displayName
+                styleSelectableChip(this, cv.hexColor, isCheckedByDefault = selectedCoreValueFilter.equals(cv.displayName, ignoreCase = true))
+            }
+            chipGroup.addView(chip)
+        }
+
+        chipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
+            if (checkedIds.isEmpty()) {
+                selectedCoreValueFilter = null
+            } else {
+                val chip = group.findViewById<Chip>(checkedIds[0])
+                val text = chip?.text?.toString()
+                selectedCoreValueFilter = if (text == "All Core Values" || text.isNullOrBlank()) null else text
+            }
+            renderColumns()
+        }
+    }
+
     private lateinit var todoDragListener: View.OnDragListener
     private lateinit var doingDragListener: View.OnDragListener
     private lateinit var doneDragListener: View.OnDragListener
@@ -343,6 +376,7 @@ class KanbanActivity : AppCompatActivity() {
             allCards.addAll(result.cards)
             TaskCache.put(this@KanbanActivity, result.cards)
             populateOwnerFilterChips()
+            populateCoreValueFilterChips()
             binding.progress.visibility = View.GONE
             renderColumns()
         }
@@ -361,7 +395,17 @@ class KanbanActivity : AppCompatActivity() {
             } else {
                 card.owners.any { it.equals(selectedOwnerFilter, ignoreCase = true) }
             }
-            matchesCategory && matchesOwner
+            val matchesCoreValue = if (selectedCoreValueFilter.isNullOrBlank()) {
+                true
+            } else {
+                val filterCv = CoreValue.entries.find { it.displayName.equals(selectedCoreValueFilter, ignoreCase = true) }
+                card.coreValues.any { cvName ->
+                    cvName.equals(selectedCoreValueFilter, ignoreCase = true) ||
+                    (filterCv != null && cvName.contains(filterCv.labelKey, ignoreCase = true)) ||
+                    (filterCv != null && filterCv.displayName.contains(cvName, ignoreCase = true))
+                }
+            }
+            matchesCategory && matchesOwner && matchesCoreValue
         }
 
         val todoCards = filteredCards.filter { it.column == "todo" }

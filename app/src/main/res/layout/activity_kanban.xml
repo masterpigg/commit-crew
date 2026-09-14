@@ -159,6 +159,16 @@
             app:singleSelection="true"
             app:selectionRequired="false" />
 
+        <!-- Row 3: Core Value Filter Chips (Wrapping across multiple lines, zero horizontal scroll!) -->
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/coreValueFilterChipGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            app:singleLine="false"
+            app:singleSelection="true"
+            app:selectionRequired="false" />
+
     </LinearLayout>
 
     <ProgressBar
