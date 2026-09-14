@@ -182,17 +182,9 @@ class ShareActivity : AppCompatActivity() {
         chip.isEnabled = true
 
         val baseColor = runCatching { Color.parseColor(hexColor) }.getOrDefault(Color.parseColor("#1976D2"))
-        val isDark = ColorUtils.calculateLuminance(baseColor) < 0.5
-        val contrastColor = if (isDark) Color.WHITE else Color.BLACK
+        val contrastColor = Color.WHITE
 
-        val bgColors = ColorStateList(
-            arrayOf(
-                intArrayOf(android.R.attr.state_checked),
-                intArrayOf(-android.R.attr.state_checked),
-                intArrayOf()
-            ),
-            intArrayOf(baseColor, baseColor, baseColor)
-        )
+        val bgColors = ColorStateList.valueOf(baseColor)
 
         val strokeColors = ColorStateList(
             arrayOf(

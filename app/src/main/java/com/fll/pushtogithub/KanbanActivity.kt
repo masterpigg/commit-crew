@@ -179,8 +179,7 @@ class KanbanActivity : AppCompatActivity() {
         chip.isEnabled = true
 
         val baseColor = runCatching { Color.parseColor(hexColor) }.getOrDefault(Color.parseColor("#1976D2"))
-        val isDark = ColorUtils.calculateLuminance(baseColor) < 0.5
-        val contrastColor = if (isDark) Color.WHITE else Color.BLACK
+        val contrastColor = Color.WHITE
 
         val bgColors = ColorStateList.valueOf(baseColor)
 
@@ -867,8 +866,7 @@ class KanbanActivity : AppCompatActivity() {
             for (owner in card.owners) {
                 val hexColor = resolveOwnerColor(owner, card.ownerColors)
                 val baseColor = runCatching { Color.parseColor(hexColor) }.getOrDefault(Color.parseColor("#1976D2"))
-                val isDark = ColorUtils.calculateLuminance(baseColor) < 0.5
-                val contrastColor = if (isDark) Color.WHITE else Color.BLACK
+                val contrastColor = Color.WHITE
 
                 val badge = TextView(this@KanbanActivity).apply {
                     text = owner

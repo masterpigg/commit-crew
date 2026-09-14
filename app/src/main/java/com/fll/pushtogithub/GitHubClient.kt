@@ -363,14 +363,48 @@ class GitHubClient(
         return colors
     }
 
-    /** Fetch map of option name -> hex color from GitHub Projects v2 fields via GraphQL. */
+    /** Fetch map of option name -> hex color from GitHub Projects v2 fields via GraphQL across Repo, User, and Org levels. */
     fun getProjectV2OptionColors(): Map<String, String> {
         val query = """
             query(${"$"}owner: String!, ${"$"}repo: String!) {
               repository(owner: ${"$"}owner, name: ${"$"}repo) {
-                projectsV2(first: 5) {
+                projectsV2(first: 10) {
                   nodes {
-                    fields(first: 20) {
+                    fields(first: 30) {
+                      nodes {
+                        ... on ProjectV2SingleSelectField {
+                          name
+                          options {
+                            name
+                            color
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              user(login: ${"$"}owner) {
+                projectsV2(first: 10) {
+                  nodes {
+                    fields(first: 30) {
+                      nodes {
+                        ... on ProjectV2SingleSelectField {
+                          name
+                          options {
+                            name
+                            color
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              organization(login: ${"$"}owner) {
+                projectsV2(first: 10) {
+                  nodes {
+                    fields(first: 30) {
                       nodes {
                         ... on ProjectV2SingleSelectField {
                           name
@@ -396,23 +430,28 @@ class GitHubClient(
         val result = queryGraphQL(query, variables) ?: return emptyMap()
 
         runCatching {
-            val projects = result.optJSONObject("data")
-                ?.optJSONObject("repository")
-                ?.optJSONObject("projectsV2")
-                ?.optJSONArray("nodes") ?: return@runCatching
+            val data = result.optJSONObject("data") ?: return@runCatching
 
-            for (i in 0 until projects.length()) {
-                val proj = projects.getJSONObject(i)
-                val fields = proj.optJSONObject("fields")?.optJSONArray("nodes") ?: continue
-                for (j in 0 until fields.length()) {
-                    val field = fields.getJSONObject(j)
-                    val options = field.optJSONArray("options") ?: continue
-                    for (k in 0 until options.length()) {
-                        val opt = options.getJSONObject(k)
-                        val name = opt.optString("name")
-                        val colorName = opt.optString("color")
-                        if (name.isNotBlank() && colorName.isNotBlank()) {
-                            colors[name.lowercase()] = githubProjectColorToHex(colorName)
+            val projectSources = listOfNotNull(
+                data.optJSONObject("repository")?.optJSONObject("projectsV2")?.optJSONArray("nodes"),
+                data.optJSONObject("user")?.optJSONObject("projectsV2")?.optJSONArray("nodes"),
+                data.optJSONObject("organization")?.optJSONObject("projectsV2")?.optJSONArray("nodes")
+            )
+
+            for (projects in projectSources) {
+                for (i in 0 until projects.length()) {
+                    val proj = projects.getJSONObject(i)
+                    val fields = proj.optJSONObject("fields")?.optJSONArray("nodes") ?: continue
+                    for (j in 0 until fields.length()) {
+                        val field = fields.getJSONObject(j)
+                        val options = field.optJSONArray("options") ?: continue
+                        for (k in 0 until options.length()) {
+                            val opt = options.getJSONObject(k)
+                            val name = opt.optString("name")
+                            val colorName = opt.optString("color")
+                            if (name.isNotBlank() && colorName.isNotBlank()) {
+                                colors[name.lowercase()] = githubProjectColorToHex(colorName)
+                            }
                         }
                     }
                 }
@@ -424,15 +463,15 @@ class GitHubClient(
 
     private fun githubProjectColorToHex(colorName: String): String {
         return when (colorName.uppercase().trim()) {
-            "RED" -> "#E53935"
-            "ORANGE" -> "#F57C00"
-            "YELLOW" -> "#FFB300"
-            "GREEN" -> "#43A047"
-            "BLUE" -> "#1E88E5"
-            "PURPLE" -> "#8E24AA"
-            "PINK" -> "#D81B60"
-            "GRAY", "GREY" -> "#546E7A"
-            else -> if (colorName.startsWith("#")) colorName else "#546E7A"
+            "RED" -> "#DA3633"
+            "ORANGE" -> "#D97706"
+            "YELLOW" -> "#F59E0B"
+            "GREEN" -> "#2EA043"
+            "BLUE" -> "#2563EB"
+            "PURPLE" -> "#8957E5"
+            "PINK" -> "#BF3989"
+            "GRAY", "GREY" -> "#6E7681"
+            else -> if (colorName.startsWith("#")) colorName else "#6E7681"
         }
     }
 
