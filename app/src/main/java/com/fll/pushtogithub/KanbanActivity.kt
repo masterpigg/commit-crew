@@ -295,10 +295,16 @@ class KanbanActivity : AppCompatActivity() {
         }
     }
 
+    private data class KanbanLoadResult(
+        val cards: List<GitHubClient.KanbanCard>,
+        val discoveredOwners: List<String>,
+        val labelColors: Map<String, String>
+    )
+
     private fun loadCardsFromGitHub() {
         binding.progress.visibility = View.VISIBLE
         lifecycleScope.launch {
-            val (cards, discoveredOwners) = withContext(Dispatchers.IO) {
+            val result = withContext(Dispatchers.IO) {
                 val client = GitHubClient(
                     token = settings.token,
                     owner = settings.owner,
@@ -311,14 +317,17 @@ class KanbanActivity : AppCompatActivity() {
                 client.ensureOwnerLabelsExist(settings.teamRoster)
                 client.initializeDefaultReadmes(settings.teamRoster)
 
+                val labelColors = client.getRepoLabelColors()
                 val resultCards = client.getKanbanCards(settings.teamRoster)
                 val allDiscovered = resultCards.flatMap { it.owners }.distinct()
-                Pair(resultCards, allDiscovered)
+                KanbanLoadResult(resultCards, allDiscovered, labelColors)
             }
+
+            repoLabelColors = result.labelColors
 
             val currentRoster = settings.teamRoster.toMutableList()
             var rosterChanged = false
-            for (ownerName in discoveredOwners) {
+            for (ownerName in result.discoveredOwners) {
                 if (ownerName.isNotBlank() && !currentRoster.contains(ownerName)) {
                     currentRoster.add(ownerName)
                     rosterChanged = true
@@ -329,8 +338,8 @@ class KanbanActivity : AppCompatActivity() {
             }
 
             allCards.clear()
-            allCards.addAll(cards)
-            TaskCache.put(this@KanbanActivity, cards)
+            allCards.addAll(result.cards)
+            TaskCache.put(this@KanbanActivity, result.cards)
             populateOwnerFilterChips()
             binding.progress.visibility = View.GONE
             renderColumns()
@@ -805,7 +814,8 @@ class KanbanActivity : AppCompatActivity() {
                 b.cardRoot.setCardBackgroundColor(Color.parseColor(cardColorHex))
             }
 
-            val renderedBody = MarkdownUtils.renderMarkdown(card.body)
+            val cleanBody = card.body.replace(Regex("(?i)^(owner|core values?):.*?(\\n+|$)", RegexOption.MULTILINE), "").trim()
+            val renderedBody = MarkdownUtils.renderMarkdown(cleanBody)
             if (renderedBody.isNotBlank()) {
                 b.textBody.text = renderedBody
                 b.textBody.visibility = View.VISIBLE
@@ -874,11 +884,11 @@ class KanbanActivity : AppCompatActivity() {
                     }
                     background = shape
 
-                    val params = LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    val params = ViewGroup.MarginLayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
                     ).apply {
-                        setMargins(0, 0, 10, 6)
+                        setMargins(0, 0, 8, 4)
                     }
                     layoutParams = params
                 }
@@ -908,11 +918,11 @@ class KanbanActivity : AppCompatActivity() {
                     }
                     background = shape
 
-                    val params = LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    val params = ViewGroup.MarginLayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
                     ).apply {
-                        setMargins(0, 0, 8, 6)
+                        setMargins(0, 0, 8, 4)
                     }
                     layoutParams = params
                 }

@@ -508,11 +508,24 @@ class GitHubClient(
         }
     }
 
+
     /** Ensure owner labels (owner:<Name>) exist for all team members. */
     fun ensureOwnerLabelsExist(teamRoster: List<String>) {
-        val colors = listOf("1976D2", "7B1FA2", "C2185B", "D32F2F", "388E3C", "F57C00", "0097A7")
+        val defaultColors = mapOf(
+            "fido" to "E53935",          // Red
+            "whiskers" to "F57C00",         // Orange
+            "polly" to "FFB300",           // Yellow
+            "bubbles" to "43A047",            // Green
+            "nibbles" to "1E88E5",          // Blue
+            "thumper" to "8E24AA",         // Purple
+            "patches" to "D81B60",        // Pink
+            "coach owl" to "546E7A", // Slate
+            "coach pigg" to "546E7A"      // Slate
+        )
+        val fallbackColors = listOf("1976D2", "7B1FA2", "C2185B", "D32F2F", "388E3C", "F57C00", "0097A7")
         for ((index, name) in teamRoster.withIndex()) {
-            val color = colors[index % colors.size]
+            val lower = name.lowercase().trim()
+            val color = defaultColors[lower] ?: fallbackColors[index % fallbackColors.size]
             ensureLabelExists("owner:$name", color, "Owner: $name")
         }
     }
