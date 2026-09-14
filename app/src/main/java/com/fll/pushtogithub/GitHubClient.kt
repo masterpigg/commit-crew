@@ -746,7 +746,7 @@ class GitHubClient(
 
                     // Extract owners and core values from issue body
                     if (body.isNotBlank()) {
-                        val match = Regex("(?i)owners?:\\s*([^\\r\\n]+)").find(body)
+                        val match = Regex("(?i)(?:owners?|workers?):\\s*([^\\r\\n]+)").find(body)
                         if (match != null) {
                             val names = match.groupValues[1].split(",", ";").map { it.trim() }
                             for (n in names) {
@@ -828,7 +828,7 @@ class GitHubClient(
             }
         }
 
-        val ownerHeader = if (owners.isNotEmpty()) "Owner: ${owners.joinToString(", ")}\n" else ""
+        val ownerHeader = if (owners.isNotEmpty()) "Workers: ${owners.joinToString(", ")}\n" else ""
         val cvHeader = if (coreValues.isNotEmpty()) "Core Values: ${coreValues.joinToString(", ")}\n" else ""
         val header = "$cvHeader$ownerHeader".trim()
         val fullBody = if (header.isNotBlank()) "$header\n\n$body" else body
@@ -866,9 +866,15 @@ class GitHubClient(
         }
     }
 
-    /** Update an existing Kanban card's column / owners on GitHub. */
-    fun updateKanbanCard(number: Int, column: String, category: String, owners: List<String>): Boolean {
-        return updateKanbanCardFull(number, "", "", column, category, owners)
+    /** Update an existing Kanban card's column, owners, and core values on GitHub. */
+    fun updateKanbanCard(
+        number: Int,
+        column: String,
+        category: String,
+        owners: List<String>,
+        coreValues: List<String> = emptyList()
+    ): Boolean {
+        return updateKanbanCardFull(number, "", "", column, category, owners, coreValues)
     }
 
     /** Full update for a Kanban card's title, body, column, category, owners, and core values. */
@@ -895,10 +901,10 @@ class GitHubClient(
         }
 
         val state = if (column.lowercase() == "done") "closed" else "open"
-        val ownerHeader = if (owners.isNotEmpty()) "Owner: ${owners.joinToString(", ")}\n" else ""
+        val ownerHeader = if (owners.isNotEmpty()) "Workers: ${owners.joinToString(", ")}\n" else ""
         val cvHeader = if (coreValues.isNotEmpty()) "Core Values: ${coreValues.joinToString(", ")}\n" else ""
         val header = "$cvHeader$ownerHeader".trim()
-        val cleanBody = body.replace(Regex("(?i)^(owner|core values?):.*?\\n+"), "").trim()
+        val cleanBody = body.replace(Regex("(?i)^(owners?|workers?|core values?):.*?\\n+"), "").trim()
         val fullBody = if (header.isNotBlank()) "$header\n\n$cleanBody" else cleanBody
 
         val json = JSONObject().apply {

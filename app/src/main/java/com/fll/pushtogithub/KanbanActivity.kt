@@ -214,7 +214,7 @@ class KanbanActivity : AppCompatActivity() {
         chipGroup.removeAllViews()
 
         val allChip = Chip(this).apply {
-            text = "All Owners"
+            text = "All Workers"
             isCheckable = true
             isChecked = selectedOwnerFilter == null
         }
@@ -235,7 +235,7 @@ class KanbanActivity : AppCompatActivity() {
             } else {
                 val chip = group.findViewById<Chip>(checkedIds[0])
                 val text = chip?.text?.toString()
-                selectedOwnerFilter = if (text == "All Owners" || text.isNullOrBlank()) null else text
+                selectedOwnerFilter = if (text == "All Workers" || text == "All Owners" || text.isNullOrBlank()) null else text
             }
             renderColumns()
         }
@@ -434,7 +434,7 @@ class KanbanActivity : AppCompatActivity() {
                     owner = settings.owner,
                     repo = settings.repo,
                     branch = settings.branch
-                ).updateKanbanCard(card.number, newColumn, card.category, card.owners)
+                ).updateKanbanCard(card.number, newColumn, card.category, card.owners, card.coreValues)
             }
             if (!success) {
                 card.column = oldColumn
@@ -447,14 +447,14 @@ class KanbanActivity : AppCompatActivity() {
     private fun showOwnerSelectionDialog(card: GitHubClient.KanbanCard) {
         val roster = settings.teamRoster
         if (roster.isEmpty()) {
-            Toast.makeText(this, "Add team roster in Setup first to assign owners.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Add team roster in Setup first to assign workers.", Toast.LENGTH_SHORT).show()
             return
         }
 
         val selectedIndexes = roster.map { card.owners.contains(it) }.toBooleanArray()
 
         MaterialAlertDialogBuilder(this)
-            .setTitle("Assign Owner to #${card.number}")
+            .setTitle("Assign Worker(s) to #${card.number}")
             .setMultiChoiceItems(roster.toTypedArray(), selectedIndexes) { _, which, isChecked ->
                 val name = roster[which]
                 if (isChecked) {
@@ -463,7 +463,7 @@ class KanbanActivity : AppCompatActivity() {
                     card.owners.remove(name)
                 }
             }
-            .setPositiveButton("Save Owners") { _, _ ->
+            .setPositiveButton("Save Worker(s)") { _, _ ->
                 renderColumns()
                 lifecycleScope.launch {
                     withContext(Dispatchers.IO) {
@@ -472,7 +472,41 @@ class KanbanActivity : AppCompatActivity() {
                             owner = settings.owner,
                             repo = settings.repo,
                             branch = settings.branch
-                        ).updateKanbanCard(card.number, card.column, card.category, card.owners)
+                        ).updateKanbanCard(card.number, card.column, card.category, card.owners, card.coreValues)
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showCoreValueSelectionDialog(card: GitHubClient.KanbanCard) {
+        val allCv = CoreValue.entries
+        val names = allCv.map { it.displayName }.toTypedArray()
+        val selectedIndexes = allCv.map { cv ->
+            card.coreValues.any { it.equals(cv.displayName, ignoreCase = true) || it.contains(cv.labelKey, ignoreCase = true) }
+        }.toBooleanArray()
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Assign Core Values to #${card.number}")
+            .setMultiChoiceItems(names, selectedIndexes) { _, which, isChecked ->
+                val cv = allCv[which]
+                if (isChecked) {
+                    if (!card.coreValues.contains(cv.displayName)) card.coreValues.add(cv.displayName)
+                } else {
+                    card.coreValues.removeAll { it.equals(cv.displayName, ignoreCase = true) || it.contains(cv.labelKey, ignoreCase = true) }
+                }
+            }
+            .setPositiveButton("Save Core Values") { _, _ ->
+                renderColumns()
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        GitHubClient(
+                            token = settings.token,
+                            owner = settings.owner,
+                            repo = settings.repo,
+                            branch = settings.branch
+                        ).updateKanbanCard(card.number, card.column, card.category, card.owners, card.coreValues)
                     }
                 }
             }
@@ -634,7 +668,7 @@ class KanbanActivity : AppCompatActivity() {
         setupRichTextToolbar(dialogView, inputBody)
 
         inputTitle.setText(card.title)
-        val cleanBody = card.body.replace(Regex("(?i)^owner:.*?\\n+"), "").trim()
+        val cleanBody = card.body.replace(Regex("(?i)^(owners?|workers?|core values?):.*?\\n+"), "").trim()
         inputBody.setText(cleanBody)
 
         when (card.category) {
@@ -865,7 +899,7 @@ class KanbanActivity : AppCompatActivity() {
                 b.cardRoot.setCardBackgroundColor(Color.parseColor(cardColorHex))
             }
 
-            val cleanBody = card.body.replace(Regex("(?i)^(owner|core values?):.*?(\\n+|$)", RegexOption.MULTILINE), "").trim()
+            val cleanBody = card.body.replace(Regex("(?i)^(owners?|workers?|core values?):.*?(\\n+|$)", RegexOption.MULTILINE), "").trim()
             val renderedBody = MarkdownUtils.renderMarkdown(cleanBody)
             if (renderedBody.isNotBlank()) {
                 b.textBody.text = renderedBody
@@ -985,6 +1019,9 @@ class KanbanActivity : AppCompatActivity() {
 
             b.buttonAddOwner.setOnClickListener {
                 showOwnerSelectionDialog(card)
+            }
+            b.buttonAddCoreValue.setOnClickListener {
+                showCoreValueSelectionDialog(card)
             }
 
             // Column move buttons

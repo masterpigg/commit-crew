@@ -257,7 +257,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Who's working on this? (Owners)"
+        android:text="Who's working on this? (Workers)"
         android:textSize="14sp"
         android:textStyle="bold"
         android:textColor="#212121"

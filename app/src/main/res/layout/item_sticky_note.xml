@@ -117,10 +117,22 @@
                 android:layout_width="0dp"
                 android:layout_height="36dp"
                 android:layout_weight="1"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold"
                 android:textColor="#212121"
                 android:text="@string/btn_add_owner"
+                android:padding="0dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonAddCoreValue"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#212121"
+                android:text="@string/btn_add_core_value"
                 android:padding="0dp" />
 
             <com.google.android.material.button.MaterialButton
@@ -129,7 +141,7 @@
                 android:layout_width="0dp"
                 android:layout_height="36dp"
                 android:layout_weight="1"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold"
                 android:textColor="#212121"
                 android:padding="0dp"

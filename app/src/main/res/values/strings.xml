@@ -83,7 +83,8 @@
     <string name="column_todo">To-Do 📌</string>
     <string name="column_doing">Doing 🛠️</string>
     <string name="column_done">Done ✅</string>
-    <string name="btn_add_owner">+ Owner</string>
+    <string name="btn_add_owner">+ Worker</string>
+    <string name="btn_add_core_value">+ Value</string>
     <string name="done">Done</string>
     <string name="linked_to_issue">Linked to #%d</string>
 
