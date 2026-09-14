@@ -332,10 +332,7 @@ class GitHubClient(
     fun getRepoLabelColors(): Map<String, String> {
         val colors = mutableMapOf<String, String>()
 
-        // 1. Fetch GitHub Projects v2 field option colors via GraphQL
-        colors.putAll(getProjectV2OptionColors())
-
-        // 2. Fetch repository label colors via REST API
+        // 1. First fetch repository label colors via REST API as baseline
         val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/labels?per_page=100"
         val request = baseRequest(url).get().build()
         try {
@@ -349,9 +346,10 @@ class GitHubClient(
                         val colorHex = obj.optString("color")
                         if (name.isNotBlank() && colorHex.isNotBlank()) {
                             val hex = "#${colorHex.removePrefix("#")}"
-                            colors[name.lowercase()] = hex
-                            if (name.startsWith("owner:", ignoreCase = true)) {
-                                colors[name.substring(6).trim().lowercase()] = hex
+                            val lower = name.lowercase().trim()
+                            colors[lower] = hex
+                            if (lower.startsWith("owner:")) {
+                                colors[lower.substring(6).trim()] = hex
                             }
                         }
                     }
@@ -360,6 +358,11 @@ class GitHubClient(
         } catch (e: Exception) {
             // Return collected colors
         }
+
+        // 2. Fetch GitHub Projects v2 field option colors via GraphQL (SingleSelect & MultiSelect)
+        // Overlay on top of REST labels so Project v2 field settings take highest precedence!
+        colors.putAll(getProjectV2OptionColors())
+
         return colors
     }
 
@@ -375,6 +378,13 @@ class GitHubClient(
                         ... on ProjectV2SingleSelectField {
                           name
                           options {
+                            name
+                            color
+                          }
+                        }
+                        ... on ProjectV2MultiSelectField {
+                          name
+                          multiSelectOptions {
                             name
                             color
                           }
@@ -396,6 +406,13 @@ class GitHubClient(
                             color
                           }
                         }
+                        ... on ProjectV2MultiSelectField {
+                          name
+                          multiSelectOptions {
+                            name
+                            color
+                          }
+                        }
                       }
                     }
                   }
@@ -409,6 +426,13 @@ class GitHubClient(
                         ... on ProjectV2SingleSelectField {
                           name
                           options {
+                            name
+                            color
+                          }
+                        }
+                        ... on ProjectV2MultiSelectField {
+                          name
+                          multiSelectOptions {
                             name
                             color
                           }
@@ -444,13 +468,18 @@ class GitHubClient(
                     val fields = proj.optJSONObject("fields")?.optJSONArray("nodes") ?: continue
                     for (j in 0 until fields.length()) {
                         val field = fields.getJSONObject(j)
-                        val options = field.optJSONArray("options") ?: continue
+                        val options = field.optJSONArray("multiSelectOptions")
+                            ?: field.optJSONArray("options")
+                            ?: continue
                         for (k in 0 until options.length()) {
                             val opt = options.getJSONObject(k)
                             val name = opt.optString("name")
                             val colorName = opt.optString("color")
                             if (name.isNotBlank() && colorName.isNotBlank()) {
-                                colors[name.lowercase()] = githubProjectColorToHex(colorName)
+                                val hex = githubProjectColorToHex(colorName)
+                                val lower = name.lowercase().trim()
+                                colors[lower] = hex
+                                colors["owner:$lower"] = hex
                             }
                         }
                     }
@@ -548,24 +577,24 @@ class GitHubClient(
     }
 
 
-    /** Ensure owner labels (owner:<Name>) exist for all team members. */
+    /** Ensure clean name labels exist for all team members. */
     fun ensureOwnerLabelsExist(teamRoster: List<String>) {
         val defaultColors = mapOf(
-            "fido" to "E53935",          // Red
-            "whiskers" to "F57C00",         // Orange
-            "polly" to "FFB300",           // Yellow
-            "bubbles" to "43A047",            // Green
-            "nibbles" to "1E88E5",          // Blue
-            "thumper" to "8E24AA",         // Purple
-            "patches" to "D81B60",        // Pink
-            "coach owl" to "546E7A", // Slate
-            "coach pigg" to "546E7A"      // Slate
+            "polly" to "BF3989",           // Pink
+            "whiskers" to "2563EB",         // Blue
+            "bubbles" to "8957E5",            // Purple
+            "fido" to "DA3633",          // Red
+            "thumper" to "F59E0B",         // Yellow
+            "nibbles" to "D97706",          // Orange
+            "patches" to "2EA043",        // Green
+            "coach owl" to "6E7681", // Gray
+            "coach pigg" to "6E7681"      // Gray
         )
-        val fallbackColors = listOf("1976D2", "7B1FA2", "C2185B", "D32F2F", "388E3C", "F57C00", "0097A7")
+        val fallbackColors = listOf("BF3989", "2563EB", "8957E5", "DA3633", "F59E0B", "D97706", "2EA043", "6E7681")
         for ((index, name) in teamRoster.withIndex()) {
             val lower = name.lowercase().trim()
             val color = defaultColors[lower] ?: fallbackColors[index % fallbackColors.size]
-            ensureLabelExists("owner:$name", color, "Owner: $name")
+            ensureLabelExists(name, color, "Team Member: $name")
         }
     }
 
@@ -690,15 +719,17 @@ class GitHubClient(
                         val cv = CoreValue.fromLabel(lbl)
                         if (cv != null) {
                             coreValues.add(cv.displayName)
-                        }
-
-                        if (lbl.startsWith("owner:", ignoreCase = true)) {
-                            val ownerName = lbl.substring(6).trim()
-                            owners.add(ownerName)
-                            ownerColors[ownerName] = hex
                         } else if (teamRoster.any { it.equals(lbl, ignoreCase = true) }) {
-                            val ownerName = lbl.trim()
-                            owners.add(ownerName)
+                            val matched = teamRoster.first { it.equals(lbl, ignoreCase = true) }
+                            if (!owners.contains(matched)) {
+                                owners.add(matched)
+                            }
+                            ownerColors[matched] = hex
+                        } else if (lbl.startsWith("owner:", ignoreCase = true)) {
+                            val ownerName = lbl.substring(6).trim()
+                            if (!owners.contains(ownerName)) {
+                                owners.add(ownerName)
+                            }
                             ownerColors[ownerName] = hex
                         }
                     }
@@ -788,7 +819,6 @@ class GitHubClient(
         labels.add(column.lowercase())
         labels.add(category.lowercase())
         for (ownerName in owners) {
-            labels.add("owner:$ownerName")
             labels.add(ownerName)
         }
         for (cvName in coreValues) {
@@ -855,7 +885,6 @@ class GitHubClient(
         labels.add(column.lowercase())
         if (category.isNotBlank()) labels.add(category.lowercase())
         for (ownerName in owners) {
-            labels.add("owner:$ownerName")
             labels.add(ownerName)
         }
         for (cvName in coreValues) {

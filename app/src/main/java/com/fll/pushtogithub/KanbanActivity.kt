@@ -60,6 +60,9 @@ class KanbanActivity : AppCompatActivity() {
         super.onResume()
         isNavigating = false
         binding.mainNavToggle.check(R.id.navTaskBoard)
+        if (::settings.isInitialized && settings.isConfigured) {
+            loadCardsFromGitHub()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -148,25 +151,25 @@ class KanbanActivity : AppCompatActivity() {
         val cardColor = cardColors[name] ?: cardColors[lower] ?: cardColors["owner:$lower"]
         if (!cardColor.isNullOrBlank() && cardColor != "#1976D2") return cardColor
 
-        // 3. Fallback: Default options palette
+        // 3. Fallback: Default options palette matching GitHub
         val defaultOptionsMap = mapOf(
-            "fido" to "#E53935",          // Red
-            "whiskers" to "#F57C00",         // Orange
-            "polly" to "#FFB300",           // Yellow
-            "bubbles" to "#43A047",            // Green
-            "nibbles" to "#1E88E5",          // Blue
-            "thumper" to "#8E24AA",         // Purple
-            "patches" to "#D81B60",        // Pink
-            "coach owl" to "#546E7A", // Slate
-            "coach pigg" to "#546E7A"      // Slate
+            "polly" to "#BF3989",          // Pink
+            "whiskers" to "#2563EB",         // Blue
+            "bubbles" to "#8957E5",            // Purple
+            "fido" to "#DA3633",          // Red
+            "thumper" to "#F59E0B",         // Yellow
+            "nibbles" to "#D97706",          // Orange
+            "patches" to "#2EA043",        // Green
+            "coach owl" to "#6E7681", // Gray
+            "coach pigg" to "#6E7681"      // Gray
         )
         val defaultColor = defaultOptionsMap[lower]
         if (defaultColor != null) return defaultColor
 
         // 4. Fallback: Deterministic palette based on name hash
         val palette = listOf(
-            "#E53935", "#F57C00", "#FFB300", "#43A047",
-            "#1E88E5", "#8E24AA", "#D81B60", "#546E7A"
+            "#BF3989", "#2563EB", "#8957E5", "#DA3633",
+            "#F59E0B", "#D97706", "#2EA043", "#6E7681"
         )
         val index = abs(lower.hashCode()) % palette.size
         return palette[index]
