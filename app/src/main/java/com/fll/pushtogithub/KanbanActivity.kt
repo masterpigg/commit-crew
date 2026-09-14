@@ -168,30 +168,40 @@ class KanbanActivity : AppCompatActivity() {
         }
         binding.btnFilterCategory.text = catText
         if (selectedCategoryFilter != "all") {
-            binding.btnFilterCategory.chipBackgroundColor = ColorStateList.valueOf(Color.parseColor("#424242"))
+            binding.btnFilterCategory.chipBackgroundColor = ColorStateList.valueOf(Color.parseColor("#2E7D32"))
+            binding.btnFilterCategory.chipStrokeColor = ColorStateList.valueOf(Color.parseColor("#1B5E20"))
+            binding.btnFilterCategory.chipStrokeWidth = 3f
             binding.btnFilterCategory.setTextColor(Color.WHITE)
         } else {
-            binding.btnFilterCategory.chipBackgroundColor = null
+            binding.btnFilterCategory.chipBackgroundColor = ColorStateList.valueOf(Color.WHITE)
+            binding.btnFilterCategory.chipStrokeColor = ColorStateList.valueOf(Color.parseColor("#BDBDBD"))
+            binding.btnFilterCategory.chipStrokeWidth = 3f
             binding.btnFilterCategory.setTextColor(Color.parseColor("#212121"))
         }
 
         // 2. Worker
         if (selectedOwnerFilter.isNullOrBlank()) {
             binding.btnFilterWorker.text = "All Workers ▾"
-            binding.btnFilterWorker.chipBackgroundColor = null
+            binding.btnFilterWorker.chipBackgroundColor = ColorStateList.valueOf(Color.WHITE)
+            binding.btnFilterWorker.chipStrokeColor = ColorStateList.valueOf(Color.parseColor("#BDBDBD"))
+            binding.btnFilterWorker.chipStrokeWidth = 3f
             binding.btnFilterWorker.setTextColor(Color.parseColor("#212121"))
         } else {
             binding.btnFilterWorker.text = "👤 $selectedOwnerFilter ▾"
             val colorHex = resolveOwnerColor(selectedOwnerFilter!!)
             val baseColor = runCatching { Color.parseColor(colorHex) }.getOrDefault(Color.parseColor("#1976D2"))
             binding.btnFilterWorker.chipBackgroundColor = ColorStateList.valueOf(baseColor)
+            binding.btnFilterWorker.chipStrokeColor = ColorStateList.valueOf(Color.BLACK)
+            binding.btnFilterWorker.chipStrokeWidth = 3f
             binding.btnFilterWorker.setTextColor(Color.WHITE)
         }
 
         // 3. Core Value
         if (selectedCoreValueFilter.isNullOrBlank()) {
             binding.btnFilterCoreValue.text = "All Core Values ▾"
-            binding.btnFilterCoreValue.chipBackgroundColor = null
+            binding.btnFilterCoreValue.chipBackgroundColor = ColorStateList.valueOf(Color.WHITE)
+            binding.btnFilterCoreValue.chipStrokeColor = ColorStateList.valueOf(Color.parseColor("#BDBDBD"))
+            binding.btnFilterCoreValue.chipStrokeWidth = 3f
             binding.btnFilterCoreValue.setTextColor(Color.parseColor("#212121"))
         } else {
             binding.btnFilterCoreValue.text = "⭐ $selectedCoreValueFilter ▾"
@@ -199,12 +209,20 @@ class KanbanActivity : AppCompatActivity() {
             val hexColor = cv?.hexColor ?: "#F57C00"
             val baseColor = runCatching { Color.parseColor(hexColor) }.getOrDefault(Color.parseColor("#F57C00"))
             binding.btnFilterCoreValue.chipBackgroundColor = ColorStateList.valueOf(baseColor)
+            binding.btnFilterCoreValue.chipStrokeColor = ColorStateList.valueOf(Color.BLACK)
+            binding.btnFilterCoreValue.chipStrokeWidth = 3f
             binding.btnFilterCoreValue.setTextColor(Color.WHITE)
         }
 
         // 4. Clear button
         val hasActiveFilter = selectedCategoryFilter != "all" || !selectedOwnerFilter.isNullOrBlank() || !selectedCoreValueFilter.isNullOrBlank()
         binding.btnClearFilters.visibility = if (hasActiveFilter) View.VISIBLE else View.GONE
+        if (hasActiveFilter) {
+            binding.btnClearFilters.chipBackgroundColor = ColorStateList.valueOf(Color.parseColor("#FFEBEE"))
+            binding.btnClearFilters.chipStrokeColor = ColorStateList.valueOf(Color.parseColor("#EF9A9A"))
+            binding.btnClearFilters.chipStrokeWidth = 2f
+            binding.btnClearFilters.setTextColor(Color.parseColor("#C62828"))
+        }
     }
 
     private fun setupFilterListeners() {

@@ -109,6 +109,11 @@
                         android:text="All Categories ▾"
                         android:textSize="12sp"
                         android:textStyle="bold"
+                        android:textColor="#212121"
+                        app:chipBackgroundColor="@android:color/white"
+                        app:chipStrokeColor="#BDBDBD"
+                        app:chipStrokeWidth="1.5dp"
+                        app:chipCornerRadius="18dp"
                         app:chipMinTouchTargetSize="0dp" />
 
                     <com.google.android.material.chip.Chip
@@ -120,6 +125,11 @@
                         android:text="All Workers ▾"
                         android:textSize="12sp"
                         android:textStyle="bold"
+                        android:textColor="#212121"
+                        app:chipBackgroundColor="@android:color/white"
+                        app:chipStrokeColor="#BDBDBD"
+                        app:chipStrokeWidth="1.5dp"
+                        app:chipCornerRadius="18dp"
                         app:chipMinTouchTargetSize="0dp" />
 
                     <com.google.android.material.chip.Chip
@@ -131,6 +141,11 @@
                         android:text="All Core Values ▾"
                         android:textSize="12sp"
                         android:textStyle="bold"
+                        android:textColor="#212121"
+                        app:chipBackgroundColor="@android:color/white"
+                        app:chipStrokeColor="#BDBDBD"
+                        app:chipStrokeWidth="1.5dp"
+                        app:chipCornerRadius="18dp"
                         app:chipMinTouchTargetSize="0dp" />
 
                     <com.google.android.material.chip.Chip
@@ -142,6 +157,9 @@
                         android:text="✕ Clear"
                         android:textSize="11sp"
                         android:textColor="#D32F2F"
+                        app:chipBackgroundColor="#FFEBEE"
+                        app:chipStrokeColor="#EF9A9A"
+                        app:chipStrokeWidth="1dp"
                         android:visibility="gone"
                         app:chipMinTouchTargetSize="0dp" />
 
@@ -165,6 +183,11 @@
                         android:text="Category ▴"
                         android:textSize="12sp"
                         android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        app:chipBackgroundColor="@color/brand_primary"
+                        app:chipStrokeColor="@color/brand_primary"
+                        app:chipStrokeWidth="1.5dp"
+                        app:chipCornerRadius="18dp"
                         app:chipMinTouchTargetSize="0dp" />
 
                     <com.google.android.material.chip.ChipGroup
@@ -182,6 +205,10 @@
                             android:layout_height="36dp"
                             android:text="All"
                             android:checked="true"
+                            android:textColor="#212121"
+                            app:chipBackgroundColor="@android:color/white"
+                            app:chipStrokeColor="#BDBDBD"
+                            app:chipStrokeWidth="1.5dp"
                             app:chipMinTouchTargetSize="0dp" />
 
                         <com.google.android.material.chip.Chip
@@ -190,6 +217,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="36dp"
                             android:text="🤖 Robot Game"
+                            android:textColor="#212121"
+                            app:chipBackgroundColor="@android:color/white"
+                            app:chipStrokeColor="#BDBDBD"
+                            app:chipStrokeWidth="1.5dp"
                             app:chipMinTouchTargetSize="0dp" />
 
                         <com.google.android.material.chip.Chip
@@ -198,6 +229,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="36dp"
                             android:text="💡 Innovation"
+                            android:textColor="#212121"
+                            app:chipBackgroundColor="@android:color/white"
+                            app:chipStrokeColor="#BDBDBD"
+                            app:chipStrokeWidth="1.5dp"
                             app:chipMinTouchTargetSize="0dp" />
 
                         <com.google.android.material.chip.Chip
@@ -206,6 +241,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="36dp"
                             android:text="📋 General"
+                            android:textColor="#212121"
+                            app:chipBackgroundColor="@android:color/white"
+                            app:chipStrokeColor="#BDBDBD"
+                            app:chipStrokeWidth="1.5dp"
                             app:chipMinTouchTargetSize="0dp" />
 
                     </com.google.android.material.chip.ChipGroup>
@@ -230,6 +269,11 @@
                         android:text="Worker ▴"
                         android:textSize="12sp"
                         android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        app:chipBackgroundColor="@color/brand_primary"
+                        app:chipStrokeColor="@color/brand_primary"
+                        app:chipStrokeWidth="1.5dp"
+                        app:chipCornerRadius="18dp"
                         app:chipMinTouchTargetSize="0dp" />
 
                     <com.google.android.material.chip.ChipGroup
@@ -260,6 +304,11 @@
                         android:text="Core Value ▴"
                         android:textSize="12sp"
                         android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        app:chipBackgroundColor="@color/brand_primary"
+                        app:chipStrokeColor="@color/brand_primary"
+                        app:chipStrokeWidth="1.5dp"
+                        app:chipCornerRadius="18dp"
                         app:chipMinTouchTargetSize="0dp" />
 
                     <com.google.android.material.chip.ChipGroup
@@ -285,6 +334,8 @@
             android:text="+ Task"
             android:textSize="12sp"
             android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@color/brand_primary"
             android:insetTop="0dp"
             android:insetBottom="0dp"
             android:paddingStart="10dp"

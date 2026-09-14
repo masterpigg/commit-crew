@@ -38,7 +38,7 @@
                 android:layout_weight="1"
                 android:textSize="15sp"
                 android:textStyle="bold"
-                android:textColor="#111111" />
+                android:textColor="?android:attr/textColorPrimary" />
 
             <TextView
                 android:id="@+id/badgeCategory"
@@ -47,12 +47,12 @@
                 android:text="Meeting Notes"
                 android:textSize="11sp"
                 android:textStyle="bold"
-                android:textColor="#1B5E20"
-                android:background="#C8E6C9"
-                android:paddingStart="6dp"
-                android:paddingEnd="6dp"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp" />
+                android:textColor="@android:color/white"
+                android:background="#2E7D32"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp" />
 
         </LinearLayout>
 
