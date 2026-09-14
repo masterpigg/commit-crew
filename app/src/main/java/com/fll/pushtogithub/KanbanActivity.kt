@@ -182,9 +182,10 @@ class KanbanActivity : AppCompatActivity() {
         chip.isEnabled = true
 
         val baseColor = runCatching { Color.parseColor(hexColor) }.getOrDefault(Color.parseColor("#1976D2"))
-        val contrastColor = Color.WHITE
+        val isDark = ColorUtils.calculateLuminance(baseColor) < 0.5
+        val contrastColor = if (isDark) Color.WHITE else Color.BLACK
 
-        val alphaUnchecked = ColorUtils.setAlphaComponent(baseColor, 120)
+        val alphaUnchecked = ColorUtils.setAlphaComponent(baseColor, 50)
 
         val bgColors = ColorStateList(
             arrayOf(
@@ -201,7 +202,7 @@ class KanbanActivity : AppCompatActivity() {
                 intArrayOf(-android.R.attr.state_checked),
                 intArrayOf()
             ),
-            intArrayOf(Color.BLACK, baseColor, baseColor)
+            intArrayOf(contrastColor, baseColor, baseColor)
         )
 
         chip.chipBackgroundColor = bgColors
@@ -867,16 +868,24 @@ class KanbanActivity : AppCompatActivity() {
             b.ownerChips.removeAllViews()
             for (owner in card.owners) {
                 val hexColor = resolveOwnerColor(owner, card.ownerColors)
+                val baseColor = runCatching { Color.parseColor(hexColor) }.getOrDefault(Color.parseColor("#1976D2"))
+                val isDark = ColorUtils.calculateLuminance(baseColor) < 0.5
+                val contrastColor = if (isDark) Color.WHITE else Color.BLACK
+
                 val chip = Chip(this@KanbanActivity).apply {
                     text = owner
                     textSize = 11f
                     chipMinHeight = 24f
+                    chipCornerRadius = 12f
+                    isClickable = false
+                    isCheckable = false
+                    isCheckedIconVisible = false
                     isEnabled = true
-                    runCatching {
-                        val bg = Color.parseColor(hexColor)
-                        chipBackgroundColor = ColorStateList(arrayOf(intArrayOf()), intArrayOf(bg))
-                        setTextColor(Color.WHITE)
-                    }
+
+                    chipBackgroundColor = ColorStateList.valueOf(baseColor)
+                    chipStrokeColor = ColorStateList.valueOf(baseColor)
+                    chipStrokeWidth = 0f
+                    setTextColor(contrastColor)
                 }
                 b.ownerChips.addView(chip)
             }
