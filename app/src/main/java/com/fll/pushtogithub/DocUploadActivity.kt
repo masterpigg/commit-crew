@@ -13,19 +13,26 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
 import android.speech.RecognizerIntent
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import androidx.core.content.IntentCompat
 import androidx.core.graphics.ColorUtils
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
 import com.fll.pushtogithub.databinding.ActivityDocUploadBinding
+import com.fll.pushtogithub.databinding.ItemSavedNoteBinding
 import com.google.android.material.chip.Chip
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -156,6 +163,10 @@ class DocUploadActivity : AppCompatActivity() {
 
         binding.btnTranscribeText.setOnClickListener {
             transcribeTextFromImage()
+        }
+
+        binding.btnRefreshSavedNotes.setOnClickListener {
+            loadSavedNotes()
         }
 
         binding.imagePreview.setOnClickListener {
@@ -574,6 +585,10 @@ class DocUploadActivity : AppCompatActivity() {
 
         binding.toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
+                R.id.action_refresh -> {
+                    loadSavedNotes()
+                    true
+                }
                 R.id.action_settings -> {
                     startActivity(Intent(this, SettingsActivity::class.java))
                     true
@@ -581,5 +596,129 @@ class DocUploadActivity : AppCompatActivity() {
                 else -> false
             }
         }
+    }
+
+    private val savedDocsList = mutableListOf<GitHubClient.DocFile>()
+
+    private fun loadSavedNotes() {
+        if (!settings.isConfigured) return
+        lifecycleScope.launch {
+            val docs = withContext(Dispatchers.IO) {
+                GitHubClient(
+                    token = settings.token,
+                    owner = settings.owner,
+                    repo = settings.repo,
+                    branch = settings.branch
+                ).listSavedDocFiles()
+            }
+            savedDocsList.clear()
+            savedDocsList.addAll(docs)
+            binding.savedNotesList.adapter = SavedNoteAdapter(savedDocsList)
+        }
+    }
+
+    private fun openSavedDocument(doc: GitHubClient.DocFile) {
+        Toast.makeText(this, "Downloading ${doc.name}…", Toast.LENGTH_SHORT).show()
+        lifecycleScope.launch {
+            val bytes = withContext(Dispatchers.IO) {
+                GitHubClient(
+                    token = settings.token,
+                    owner = settings.owner,
+                    repo = settings.repo,
+                    branch = settings.branch
+                ).getFileAtCommit(doc.path, settings.branch)
+            }
+
+            if (bytes == null) {
+                Toast.makeText(this@DocUploadActivity, "Failed to download ${doc.name}", Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
+            val dir = File(cacheDir, "docs").apply { if (!exists()) mkdirs() }
+            val file = File(dir, doc.name)
+            file.writeBytes(bytes)
+
+            val uri = FileProvider.getUriForFile(this@DocUploadActivity, "$packageName.fileprovider", file)
+            val ext = doc.name.substringAfterLast('.', "").lowercase()
+            val mimeType = when (ext) {
+                "pdf" -> "application/pdf"
+                "png" -> "image/png"
+                "jpg", "jpeg" -> "image/jpeg"
+                "txt", "md" -> "text/plain"
+                "doc", "docx" -> "application/msword"
+                else -> "*/*"
+            }
+
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, mimeType)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+
+            try {
+                startActivity(Intent.createChooser(intent, "Open with…"))
+            } catch (e: Exception) {
+                Toast.makeText(this@DocUploadActivity, "No app found to open ${doc.name}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun deleteSavedDocument(doc: GitHubClient.DocFile) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Delete Document?")
+            .setMessage("Are you sure you want to delete '${doc.name}' from GitHub?")
+            .setPositiveButton("Delete") { _, _ ->
+                lifecycleScope.launch {
+                    val success = withContext(Dispatchers.IO) {
+                        GitHubClient(
+                            token = settings.token,
+                            owner = settings.owner,
+                            repo = settings.repo,
+                            branch = settings.branch
+                        ).deleteFile(doc.path, "Delete ${doc.name}")
+                    }
+                    if (success) {
+                        savedDocsList.remove(doc)
+                        binding.savedNotesList.adapter?.notifyDataSetChanged()
+                        Toast.makeText(this@DocUploadActivity, "Deleted ${doc.name}", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@DocUploadActivity, "Failed to delete ${doc.name}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    inner class SavedNoteAdapter(
+        private val items: List<GitHubClient.DocFile>
+    ) : RecyclerView.Adapter<SavedNoteAdapter.VH>() {
+
+        inner class VH(val binding: ItemSavedNoteBinding) : RecyclerView.ViewHolder(binding.root)
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+            val b = ItemSavedNoteBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            return VH(b)
+        }
+
+        override fun onBindViewHolder(holder: VH, position: Int) {
+            val doc = items[position]
+            val b = holder.binding
+
+            val ext = doc.name.substringAfterLast('.', "").lowercase()
+            b.textFileTypeIcon.text = when {
+                ext in listOf("png", "jpg", "jpeg", "gif", "svg") -> "🖼️"
+                ext == "pdf" -> "📄"
+                ext in listOf("doc", "docx", "txt", "md") -> "📝"
+                else -> "📎"
+            }
+
+            b.textDocTitle.text = doc.name
+            b.badgeCategory.text = doc.category.replace("-", " ").replaceFirstChar { it.uppercase() }
+
+            b.btnOpenDoc.setOnClickListener { openSavedDocument(doc) }
+            b.btnDeleteDoc.setOnClickListener { deleteSavedDocument(doc) }
+        }
+
+        override fun getItemCount() = items.size
     }
 }

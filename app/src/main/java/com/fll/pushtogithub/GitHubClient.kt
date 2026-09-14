@@ -39,6 +39,14 @@ class GitHubClient(
         val sha: String
     )
 
+    /** A saved documentation file entry from the repo. */
+    data class DocFile(
+        val name: String,
+        val path: String,
+        val category: String, // "meeting-notes", "innovation-project", "robot-game/design"
+        val htmlUrl: String? = null
+    )
+
     /** A commit entry from the file history. */
     data class CommitInfo(
         val sha: String,
@@ -232,6 +240,38 @@ class GitHubClient(
         } catch (e: Exception) {
             emptyList()
         }
+    }
+
+    /** List all saved notes & documents across meeting-notes, innovation-project, and robot-game/design. */
+    fun listSavedDocFiles(): List<DocFile> {
+        val categories = listOf("meeting-notes", "innovation-project", "robot-game/design")
+        val docs = mutableListOf<DocFile>()
+
+        for (cat in categories) {
+            val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/contents/${encPath(cat)}?ref=${enc(branch)}"
+            val request = baseRequest(url).get().build()
+            try {
+                http.newCall(request).execute().use { resp ->
+                    if (!resp.isSuccessful) return@use
+                    val text = resp.body?.string().orEmpty()
+                    val array = JSONArray(text)
+                    for (i in 0 until array.length()) {
+                        val obj = array.getJSONObject(i)
+                        val type = obj.optString("type")
+                        val name = obj.optString("name")
+                        val path = obj.optString("path")
+                        val htmlUrl = obj.optString("html_url")
+
+                        if (type == "file" && name != "README.md" && !name.startsWith(".")) {
+                            docs.add(DocFile(name, path, cat, htmlUrl))
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                // Ignore missing directory
+            }
+        }
+        return docs.sortedByDescending { it.name }
     }
 
     /** Add [projectName] to the archived projects list on GitHub. */

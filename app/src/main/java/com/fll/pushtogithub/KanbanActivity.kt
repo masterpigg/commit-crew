@@ -89,6 +89,10 @@ class KanbanActivity : AppCompatActivity() {
 
         binding.toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
+                R.id.action_refresh -> {
+                    loadCardsFromGitHub()
+                    true
+                }
                 R.id.action_settings -> {
                     startActivity(Intent(this, SettingsActivity::class.java))
                     true

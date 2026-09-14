@@ -93,6 +93,10 @@ class TimeMachineActivity : AppCompatActivity() {
         // ── Toolbar menu ─────────────────────────────────────────────────
         binding.toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
+                R.id.action_refresh -> {
+                    loadProjects()
+                    true
+                }
                 R.id.action_settings -> {
                     startActivity(Intent(this, SettingsActivity::class.java))
                     true
