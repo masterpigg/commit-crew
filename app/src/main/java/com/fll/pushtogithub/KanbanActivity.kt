@@ -185,15 +185,13 @@ class KanbanActivity : AppCompatActivity() {
         val isDark = ColorUtils.calculateLuminance(baseColor) < 0.5
         val contrastColor = if (isDark) Color.WHITE else Color.BLACK
 
-        val alphaUnchecked = ColorUtils.setAlphaComponent(baseColor, 50)
-
         val bgColors = ColorStateList(
             arrayOf(
                 intArrayOf(android.R.attr.state_checked),
                 intArrayOf(-android.R.attr.state_checked),
                 intArrayOf()
             ),
-            intArrayOf(baseColor, alphaUnchecked, baseColor)
+            intArrayOf(baseColor, baseColor, baseColor)
         )
 
         val strokeColors = ColorStateList(
@@ -202,7 +200,7 @@ class KanbanActivity : AppCompatActivity() {
                 intArrayOf(-android.R.attr.state_checked),
                 intArrayOf()
             ),
-            intArrayOf(contrastColor, baseColor, baseColor)
+            intArrayOf(Color.BLACK, Color.TRANSPARENT, Color.TRANSPARENT)
         )
 
         chip.chipBackgroundColor = bgColors
