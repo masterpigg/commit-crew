@@ -5,6 +5,8 @@ import android.content.ClipData
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.view.DragEvent
@@ -13,6 +15,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
@@ -849,7 +852,7 @@ class KanbanActivity : AppCompatActivity() {
                 showEditStickyNoteDialog(card)
             }
 
-            // Render assigned owner chips with GitHub field/label colors
+            // Render assigned owner badges with GitHub field/label colors
             b.ownerChips.removeAllViews()
             for (owner in card.owners) {
                 val hexColor = resolveOwnerColor(owner, card.ownerColors)
@@ -857,22 +860,63 @@ class KanbanActivity : AppCompatActivity() {
                 val isDark = ColorUtils.calculateLuminance(baseColor) < 0.5
                 val contrastColor = if (isDark) Color.WHITE else Color.BLACK
 
-                val chip = Chip(this@KanbanActivity).apply {
+                val badge = TextView(this@KanbanActivity).apply {
                     text = owner
                     textSize = 11f
-                    chipMinHeight = 24f
-                    chipCornerRadius = 12f
-                    isClickable = false
-                    isCheckable = false
-                    isCheckedIconVisible = false
-                    isEnabled = true
-
-                    chipBackgroundColor = ColorStateList.valueOf(baseColor)
-                    chipStrokeColor = ColorStateList.valueOf(baseColor)
-                    chipStrokeWidth = 0f
+                    setTypeface(null, Typeface.BOLD)
                     setTextColor(contrastColor)
+                    setPadding(18, 6, 18, 6)
+
+                    val shape = GradientDrawable().apply {
+                        shape = GradientDrawable.RECTANGLE
+                        cornerRadius = 16f
+                        setColor(baseColor)
+                    }
+                    background = shape
+
+                    val params = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        setMargins(0, 0, 10, 6)
+                    }
+                    layoutParams = params
                 }
-                b.ownerChips.addView(chip)
+                b.ownerChips.addView(badge)
+            }
+
+            // Render Core Value badges on task cards
+            b.coreValueChips.removeAllViews()
+            for (cvName in card.coreValues) {
+                val cv = CoreValue.entries.find { it.displayName == cvName || it.displayName.contains(cvName) }
+                val hexColor = cv?.hexColor ?: "#F57C00"
+                val baseColor = runCatching { Color.parseColor(hexColor) }.getOrDefault(Color.parseColor("#F57C00"))
+                val isDark = ColorUtils.calculateLuminance(baseColor) < 0.5
+                val contrastColor = if (isDark) Color.WHITE else Color.BLACK
+
+                val badge = TextView(this@KanbanActivity).apply {
+                    text = cvName
+                    textSize = 10f
+                    setTypeface(null, Typeface.BOLD)
+                    setTextColor(contrastColor)
+                    setPadding(14, 4, 14, 4)
+
+                    val shape = GradientDrawable().apply {
+                        shape = GradientDrawable.RECTANGLE
+                        cornerRadius = 14f
+                        setColor(baseColor)
+                    }
+                    background = shape
+
+                    val params = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        setMargins(0, 0, 8, 6)
+                    }
+                    layoutParams = params
+                }
+                b.coreValueChips.addView(badge)
             }
 
             b.buttonAddOwner.setOnClickListener {

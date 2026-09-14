@@ -73,21 +73,21 @@
             android:visibility="gone"
             android:paddingBottom="8dp" />
 
-        <!-- Assigned Owner Chips -->
-        <com.google.android.material.chip.ChipGroup
+        <!-- Assigned Owner Badges Container -->
+        <LinearLayout
             android:id="@+id/ownerChips"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="4dp"
-            app:singleSelection="false" />
+            android:orientation="horizontal"
+            android:paddingBottom="4dp" />
 
-        <!-- Core Value Badges -->
-        <com.google.android.material.chip.ChipGroup
+        <!-- Core Value Badges Container -->
+        <LinearLayout
             android:id="@+id/coreValueChips"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="8dp"
-            app:singleSelection="false" />
+            android:orientation="horizontal"
+            android:paddingBottom="8dp" />
 
         <!-- Column Action Buttons -->
         <LinearLayout
