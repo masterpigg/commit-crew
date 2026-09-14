@@ -137,15 +137,15 @@ class KanbanActivity : AppCompatActivity() {
     private fun resolveOwnerColor(name: String, cardColors: Map<String, String> = emptyMap()): String {
         val lower = name.lowercase().trim()
 
-        // 1. Check card label colors
-        val cardColor = cardColors[name] ?: cardColors[lower] ?: cardColors["owner:$lower"]
-        if (!cardColor.isNullOrBlank() && cardColor != "#1976D2") return cardColor
-
-        // 2. Check repo label / Projects v2 option colors from GitHub
+        // 1. Check live repo label / Projects v2 option colors pulled directly from GitHub
         val repoColor = repoLabelColors[lower] ?: repoLabelColors["owner:$lower"]
         if (!repoColor.isNullOrBlank()) return repoColor
 
-        // 3. Fallback: Exact GitHub Projects v2 field options palette mapping
+        // 2. Check card label colors
+        val cardColor = cardColors[name] ?: cardColors[lower] ?: cardColors["owner:$lower"]
+        if (!cardColor.isNullOrBlank() && cardColor != "#1976D2") return cardColor
+
+        // 3. Fallback: Default options palette
         val defaultOptionsMap = mapOf(
             "fido" to "#E53935",          // Red
             "whiskers" to "#F57C00",         // Orange
@@ -162,14 +162,8 @@ class KanbanActivity : AppCompatActivity() {
 
         // 4. Fallback: Deterministic palette based on name hash
         val palette = listOf(
-            "#E53935", // Red
-            "#F57C00", // Orange
-            "#FFB300", // Yellow
-            "#43A047", // Green
-            "#1E88E5", // Blue
-            "#8E24AA", // Purple
-            "#D81B60", // Pink
-            "#546E7A"  // Slate
+            "#E53935", "#F57C00", "#FFB300", "#43A047",
+            "#1E88E5", "#8E24AA", "#D81B60", "#546E7A"
         )
         val index = abs(lower.hashCode()) % palette.size
         return palette[index]
@@ -185,14 +179,7 @@ class KanbanActivity : AppCompatActivity() {
         val isDark = ColorUtils.calculateLuminance(baseColor) < 0.5
         val contrastColor = if (isDark) Color.WHITE else Color.BLACK
 
-        val bgColors = ColorStateList(
-            arrayOf(
-                intArrayOf(android.R.attr.state_checked),
-                intArrayOf(-android.R.attr.state_checked),
-                intArrayOf()
-            ),
-            intArrayOf(baseColor, baseColor, baseColor)
-        )
+        val bgColors = ColorStateList.valueOf(baseColor)
 
         val strokeColors = ColorStateList(
             arrayOf(
