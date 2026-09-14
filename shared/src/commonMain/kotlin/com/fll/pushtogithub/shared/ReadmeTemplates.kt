@@ -49,10 +49,14 @@ $rosterLinks
 
 ---
 
-## 📂 Team Sections
-* [🤖 Robot Game Code & Strategy](robot-game/)
-* [💡 Innovation Project Notes & Research](innovation-project/)
-* [📋 Team Meeting Notes & Journal](meeting-notes/)
+## 📂 Team Sections & Folder Structure
+* **[🤖 Robot Game Code & Strategy](robot-game/)**  
+  * `robot-game/<ProjectName>/` — SPIKE Prime `.llsp3` code files & Scratch preview diagrams.
+  * `robot-game/design/` — Robot design photos, attachment CAD sketches, and run strategy notes.
+* **[💡 Innovation Project Notes & Research](innovation-project/)**  
+  * `innovation-project/` — Research PDFs, expert interview notes, skit plans, presentation slides.
+* **[📋 Team Meeting Notes & Journal](meeting-notes/)**  
+  * `meeting-notes/` — Practice session logs, whiteboard drawings, transcribed notes, team reflections.
 
 ---
 
@@ -64,6 +68,12 @@ $rosterLinks
 # 🤖 Robot Game Workspace
 
 Welcome to the Robot Game hub! Here we store all our SPIKE Prime robot programs, mission strategies, and run plans.
+
+---
+
+## 📂 Folder Structure
+* **`<ProjectName>/`** — SPIKE Prime code files (`.llsp3`) and extracted Scratch code preview diagrams.
+* **`design/`** — Robot design photos, attachment CAD sketches, and run strategy notes.
 
 ---
 
@@ -95,6 +105,11 @@ Welcome to our Innovation Project hub! Here we document our problem research, in
 
 ---
 
+## 📂 Folder Structure
+* **`innovation-project/`** — Research PDFs, expert interview transcripts, skit plans, and presentation slides.
+
+---
+
 ## ❓ The Problem We Are Solving
 `[Fill in: What ocean/community problem did our team identify?]`
 
@@ -119,6 +134,11 @@ Welcome to our Innovation Project hub! Here we document our problem research, in
 # 📋 Meeting Notes & Team Journal
 
 Welcome to our team journal! Here we document what we accomplished during each practice session.
+
+---
+
+## 📂 Folder Structure
+* **`meeting-notes/`** — Practice session logs, whiteboard drawings, transcribed notes, and team reflections.
 
 ---
 
