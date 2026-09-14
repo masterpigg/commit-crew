@@ -602,6 +602,25 @@ class KanbanActivity : AppCompatActivity() {
             ownerChipsGroup.addView(chip)
         }
 
+        val coreValueChipsGroup = dialogView.findViewById<ChipGroup>(R.id.coreValueChipsGroup)
+        if (coreValueChipsGroup != null) {
+            coreValueChipsGroup.removeAllViews()
+            for (cv in CoreValue.entries) {
+                val chip = Chip(this).apply {
+                    text = cv.displayName
+                    isCheckable = true
+                    isChecked = card.coreValues.contains(cv.displayName)
+                    runCatching {
+                        val bg = Color.parseColor(cv.hexColor)
+                        chipBackgroundColor = ColorStateList.valueOf(bg)
+                        val isDark = ColorUtils.calculateLuminance(bg) < 0.5
+                        setTextColor(if (isDark) Color.WHITE else Color.BLACK)
+                    }
+                }
+                coreValueChipsGroup.addView(chip)
+            }
+        }
+
         val dialog = MaterialAlertDialogBuilder(this)
             .setTitle("✏️ Edit Task #${card.number}")
             .setView(dialogView)
@@ -627,12 +646,22 @@ class KanbanActivity : AppCompatActivity() {
                     if (chip.isChecked) selectedOwners.add(chip.text.toString())
                 }
 
+                val selectedCoreValues = mutableListOf<String>()
+                if (coreValueChipsGroup != null) {
+                    for (i in 0 until coreValueChipsGroup.childCount) {
+                        val chip = coreValueChipsGroup.getChildAt(i) as? Chip ?: continue
+                        if (chip.isChecked) selectedCoreValues.add(chip.text.toString())
+                    }
+                }
+
                 card.title = newTitle
                 card.body = newBody
                 card.column = newColumn
                 card.category = newCategory
                 card.owners.clear()
                 card.owners.addAll(selectedOwners)
+                card.coreValues.clear()
+                card.coreValues.addAll(selectedCoreValues)
                 renderColumns()
 
                 binding.progress.visibility = View.VISIBLE
@@ -643,7 +672,7 @@ class KanbanActivity : AppCompatActivity() {
                             owner = settings.owner,
                             repo = settings.repo,
                             branch = settings.branch
-                        ).updateKanbanCardFull(card.number, newTitle, newBody, newColumn, newCategory, selectedOwners)
+                        ).updateKanbanCardFull(card.number, newTitle, newBody, newColumn, newCategory, selectedOwners, selectedCoreValues)
                     }
                     binding.progress.visibility = View.GONE
                     if (success) {
