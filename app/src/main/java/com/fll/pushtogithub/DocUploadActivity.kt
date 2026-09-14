@@ -1,5 +1,6 @@
 package com.fll.pushtogithub
 
+import com.fll.pushtogithub.shared.CoreValue
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
@@ -202,8 +203,9 @@ class DocUploadActivity : AppCompatActivity() {
         // ── Default category to Meeting Notes ────────────────────────────
         binding.categoryToggle.check(R.id.buttonMeetingNotes)
 
-        // ── Populate contributor chips ────────────────────────────────────
+        // ── Populate contributor & core value chips ─────────────────────────
         populateContributorChips()
+        populateCoreValueChips()
 
         // ── Upload button ────────────────────────────────────────────────
         binding.buttonUpload.setOnClickListener { onUploadClicked() }
@@ -401,6 +403,39 @@ class DocUploadActivity : AppCompatActivity() {
         return palette[index]
     }
 
+    private fun styleSelectableChip(chip: Chip, hexColor: String, isCheckedByDefault: Boolean = false) {
+        chip.isCheckable = true
+        chip.isCheckedIconVisible = true
+        chip.isChecked = isCheckedByDefault
+
+        val baseColor = runCatching { Color.parseColor(hexColor) }.getOrDefault(Color.parseColor("#1976D2"))
+        val isDark = ColorUtils.calculateLuminance(baseColor) < 0.5
+        val contrastColor = if (isDark) Color.WHITE else Color.BLACK
+
+        val alphaUnchecked = ColorUtils.setAlphaComponent(baseColor, 50)
+        val bgColors = ColorStateList(
+            arrayOf(
+                intArrayOf(android.R.attr.state_checked),
+                intArrayOf(-android.R.attr.state_checked)
+            ),
+            intArrayOf(baseColor, alphaUnchecked)
+        )
+
+        val strokeColors = ColorStateList(
+            arrayOf(
+                intArrayOf(android.R.attr.state_checked),
+                intArrayOf(-android.R.attr.state_checked)
+            ),
+            intArrayOf(contrastColor, baseColor)
+        )
+
+        chip.chipBackgroundColor = bgColors
+        chip.chipStrokeColor = strokeColors
+        chip.chipStrokeWidth = 4f
+        chip.setTextColor(contrastColor)
+        chip.checkedIconTint = ColorStateList.valueOf(contrastColor)
+    }
+
     private fun populateContributorChips() {
         val chipGroup = binding.contributorChips
         chipGroup.removeAllViews()
@@ -410,15 +445,19 @@ class DocUploadActivity : AppCompatActivity() {
             val hexColor = getOwnerColorHex(name)
             val chip = Chip(this).apply {
                 text = name
-                isCheckable = true
-                isChecked = name in sessionSelection
+                styleSelectableChip(this, hexColor, isCheckedByDefault = name in sessionSelection)
+            }
+            chipGroup.addView(chip)
+        }
+    }
 
-                runCatching {
-                    val bg = Color.parseColor(hexColor)
-                    chipBackgroundColor = ColorStateList.valueOf(bg)
-                    val isDark = ColorUtils.calculateLuminance(bg) < 0.5
-                    setTextColor(if (isDark) Color.WHITE else Color.BLACK)
-                }
+    private fun populateCoreValueChips() {
+        val chipGroup = binding.coreValueChips
+        chipGroup.removeAllViews()
+        for (cv in CoreValue.entries) {
+            val chip = Chip(this).apply {
+                text = cv.displayName
+                styleSelectableChip(this, cv.hexColor, isCheckedByDefault = false)
             }
             chipGroup.addView(chip)
         }

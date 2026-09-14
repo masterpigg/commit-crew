@@ -175,6 +175,39 @@ class KanbanActivity : AppCompatActivity() {
         return palette[index]
     }
 
+    private fun styleSelectableChip(chip: Chip, hexColor: String, isCheckedByDefault: Boolean = false) {
+        chip.isCheckable = true
+        chip.isCheckedIconVisible = true
+        chip.isChecked = isCheckedByDefault
+
+        val baseColor = runCatching { Color.parseColor(hexColor) }.getOrDefault(Color.parseColor("#1976D2"))
+        val isDark = ColorUtils.calculateLuminance(baseColor) < 0.5
+        val contrastColor = if (isDark) Color.WHITE else Color.BLACK
+
+        val alphaUnchecked = ColorUtils.setAlphaComponent(baseColor, 50)
+        val bgColors = ColorStateList(
+            arrayOf(
+                intArrayOf(android.R.attr.state_checked),
+                intArrayOf(-android.R.attr.state_checked)
+            ),
+            intArrayOf(baseColor, alphaUnchecked)
+        )
+
+        val strokeColors = ColorStateList(
+            arrayOf(
+                intArrayOf(android.R.attr.state_checked),
+                intArrayOf(-android.R.attr.state_checked)
+            ),
+            intArrayOf(contrastColor, baseColor)
+        )
+
+        chip.chipBackgroundColor = bgColors
+        chip.chipStrokeColor = strokeColors
+        chip.chipStrokeWidth = 4f
+        chip.setTextColor(contrastColor)
+        chip.checkedIconTint = ColorStateList.valueOf(contrastColor)
+    }
+
     private fun populateOwnerFilterChips() {
         val chipGroup = binding.ownerFilterChipGroup
         chipGroup.removeAllViews()
@@ -188,18 +221,9 @@ class KanbanActivity : AppCompatActivity() {
 
         for (name in settings.teamRoster) {
             val hexColor = resolveOwnerColor(name)
-
             val chip = Chip(this).apply {
                 text = name
-                isCheckable = true
-                isChecked = selectedOwnerFilter.equals(name, ignoreCase = true)
-
-                runCatching {
-                    val bg = Color.parseColor(hexColor)
-                    chipBackgroundColor = ColorStateList.valueOf(bg)
-                    val isDark = ColorUtils.calculateLuminance(bg) < 0.5
-                    setTextColor(if (isDark) Color.WHITE else Color.BLACK)
-                }
+                styleSelectableChip(this, hexColor, isCheckedByDefault = selectedOwnerFilter.equals(name, ignoreCase = true))
             }
             chipGroup.addView(chip)
         }
@@ -459,13 +483,7 @@ class KanbanActivity : AppCompatActivity() {
             for (cv in CoreValue.entries) {
                 val chip = Chip(this).apply {
                     text = cv.displayName
-                    isCheckable = true
-                    runCatching {
-                        val bg = Color.parseColor(cv.hexColor)
-                        chipBackgroundColor = ColorStateList.valueOf(bg)
-                        val isDark = ColorUtils.calculateLuminance(bg) < 0.5
-                        setTextColor(if (isDark) Color.WHITE else Color.BLACK)
-                    }
+                    styleSelectableChip(this, cv.hexColor, isCheckedByDefault = false)
                 }
                 coreValueChipsGroup.addView(chip)
             }
@@ -476,13 +494,7 @@ class KanbanActivity : AppCompatActivity() {
             val hexColor = resolveOwnerColor(name)
             val chip = Chip(this).apply {
                 text = name
-                isCheckable = true
-                runCatching {
-                    val bg = Color.parseColor(hexColor)
-                    chipBackgroundColor = ColorStateList.valueOf(bg)
-                    val isDark = ColorUtils.calculateLuminance(bg) < 0.5
-                    setTextColor(if (isDark) Color.WHITE else Color.BLACK)
-                }
+                styleSelectableChip(this, hexColor, isCheckedByDefault = false)
             }
             ownerChipsGroup.addView(chip)
         }
@@ -590,14 +602,7 @@ class KanbanActivity : AppCompatActivity() {
             val hexColor = resolveOwnerColor(name)
             val chip = Chip(this).apply {
                 text = name
-                isCheckable = true
-                isChecked = card.owners.contains(name)
-                runCatching {
-                    val bg = Color.parseColor(hexColor)
-                    chipBackgroundColor = ColorStateList.valueOf(bg)
-                    val isDark = ColorUtils.calculateLuminance(bg) < 0.5
-                    setTextColor(if (isDark) Color.WHITE else Color.BLACK)
-                }
+                styleSelectableChip(this, hexColor, isCheckedByDefault = card.owners.contains(name))
             }
             ownerChipsGroup.addView(chip)
         }
@@ -608,14 +613,7 @@ class KanbanActivity : AppCompatActivity() {
             for (cv in CoreValue.entries) {
                 val chip = Chip(this).apply {
                     text = cv.displayName
-                    isCheckable = true
-                    isChecked = card.coreValues.contains(cv.displayName)
-                    runCatching {
-                        val bg = Color.parseColor(cv.hexColor)
-                        chipBackgroundColor = ColorStateList.valueOf(bg)
-                        val isDark = ColorUtils.calculateLuminance(bg) < 0.5
-                        setTextColor(if (isDark) Color.WHITE else Color.BLACK)
-                    }
+                    styleSelectableChip(this, cv.hexColor, isCheckedByDefault = card.coreValues.contains(cv.displayName))
                 }
                 coreValueChipsGroup.addView(chip)
             }
