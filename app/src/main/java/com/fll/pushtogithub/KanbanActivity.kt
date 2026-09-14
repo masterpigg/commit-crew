@@ -898,19 +898,23 @@ class KanbanActivity : AppCompatActivity() {
                 true
             }
 
-            b.cardRoot.isLongClickable = true
-            b.cardRoot.setOnLongClickListener(startDrag)
-            b.dragHandle.isLongClickable = true
-            b.dragHandle.setOnLongClickListener(startDrag)
-            b.textTitle.isLongClickable = true
-            b.textTitle.setOnLongClickListener(startDrag)
-            b.textNumber.isLongClickable = true
-            b.textNumber.setOnLongClickListener(startDrag)
-            holder.itemView.isLongClickable = true
-            holder.itemView.setOnLongClickListener(startDrag)
-
-            b.cardRoot.setOnClickListener {
+            val openEditDialog = View.OnClickListener {
                 showEditStickyNoteDialog(card)
+            }
+
+            val cardViews = listOf(
+                b.cardRoot,
+                b.textTitle,
+                b.textNumber,
+                b.textBody,
+                b.dragHandle,
+                holder.itemView
+            )
+            for (v in cardViews) {
+                v.isClickable = true
+                v.isLongClickable = true
+                v.setOnClickListener(openEditDialog)
+                v.setOnLongClickListener(startDrag)
             }
 
             // Render assigned owner badges with GitHub field/label colors
