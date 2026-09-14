@@ -28,12 +28,12 @@
         app:selectionRequired="true">
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/navTeamCode"
+            android:id="@+id/navTaskBoard"
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
-            android:text="🤖 Team Code"
+            android:text="📋 Task Board"
             android:textSize="13sp"
             android:textStyle="bold"
             android:textColor="@android:color/white"
@@ -52,12 +52,12 @@
             app:strokeColor="@android:color/white" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/navTaskBoard"
+            android:id="@+id/navTeamCode"
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
-            android:text="📋 Task Board"
+            android:text="🤖 Team Code"
             android:textSize="13sp"
             android:textStyle="bold"
             android:textColor="@android:color/white"
