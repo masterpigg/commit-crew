@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fillViewport="true"
+    android:background="#FFFDE7">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Preview area for shared or captured content -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginBottom="12dp"
+            android:background="#212121">
+
+            <ImageView
+                android:id="@+id/dialogImagePreview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerInside"
+                android:contentDescription="Preview" />
+
+            <TextView
+                android:id="@+id/dialogTextPreview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="12dp"
+                android:textSize="13sp"
+                android:textColor="#FFFFFF"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/dialogFileTypeIcon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:textSize="40sp"
+                android:textColor="#FFFFFF"
+                android:visibility="gone" />
+
+            <!-- Action Overlay Buttons: Take Photo & Choose File -->
+            <LinearLayout
+                android:id="@+id/dialogActionOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:background="#60000000">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/dialogBtnTakePhoto"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:text="📷 Take Photo"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="8dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/dialogBtnPickFile"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:text="🖼️ Pick File"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    app:strokeColor="#FFFFFF" />
+
+            </LinearLayout>
+        </FrameLayout>
+
+        <!-- Transcribe Text Button (Google ML Kit OCR) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/dialogBtnTranscribeText"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:text="✨ Transcribe Text from Photo (OCR)"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Category selection -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Category / Workspace"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:paddingBottom="4dp" />
+
+        <RadioGroup
+            android:id="@+id/dialogCategoryGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <RadioButton
+                android:id="@+id/dialogRadioMeeting"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="📋 Meeting"
+                android:textColor="#111111"
+                android:textStyle="bold"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/dialogRadioInnovation"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="💡 Innovation"
+                android:textColor="#111111"
+                android:textStyle="bold" />
+
+            <RadioButton
+                android:id="@+id/dialogRadioDesign"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="🤖 Robot"
+                android:textColor="#111111"
+                android:textStyle="bold" />
+        </RadioGroup>
+
+        <!-- Title / description -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/dialogLayoutDocTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Document Title"
+            app:hintTextColor="#212121"
+            app:boxStrokeColor="#212121"
+            app:endIconMode="custom"
+            app:endIconDrawable="@android:drawable/ic_btn_speak_now"
+            android:layout_marginBottom="12dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dialogInputDocTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#111111"
+                android:textSize="15sp"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Contributor chips -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Who contributed?"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:paddingBottom="4dp" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/dialogContributorChips"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:singleSelection="false" />
+
+        <!-- Core Values Chips -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="FIRST Core Values Demonstrated"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:paddingBottom="4dp" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/dialogCoreValueChips"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:singleSelection="false" />
+
+        <!-- Comment -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/dialogLayoutComment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Notes / Journal Comments"
+            app:hintTextColor="#212121"
+            app:boxStrokeColor="#212121"
+            app:endIconMode="custom"
+            app:endIconDrawable="@android:drawable/ic_btn_speak_now"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dialogInputComment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minLines="2"
+                android:gravity="top"
+                android:textColor="#111111"
+                android:inputType="textMultiLine|textCapSentences" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+</ScrollView>

@@ -142,6 +142,9 @@ class DocUploadActivity : AppCompatActivity() {
         super.onResume()
         isNavigating = false
         binding.mainNavToggle.check(R.id.navSnapNotes)
+        if (settings.isConfigured) {
+            loadSavedNotes()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
