@@ -107,10 +107,13 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutTabletName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/label_tablet_name"
                 app:placeholderText="@string/hint_tablet_name"
+                app:endIconMode="custom"
+                app:endIconDrawable="@android:drawable/ic_btn_speak_now"
                 android:layout_marginBottom="12dp">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -128,11 +131,14 @@
                 android:layout_marginBottom="12dp">
 
                 <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/layoutTeamRoster"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:hint="@string/label_team_roster"
-                    app:placeholderText="@string/hint_team_roster">
+                    app:placeholderText="@string/hint_team_roster"
+                    app:endIconMode="custom"
+                    app:endIconDrawable="@android:drawable/ic_btn_speak_now">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/inputTeamRoster"
@@ -153,10 +159,13 @@
             </LinearLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutRobotNicknames"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/label_robot_nicknames"
                 app:placeholderText="@string/hint_robot_nicknames"
+                app:endIconMode="custom"
+                app:endIconDrawable="@android:drawable/ic_btn_speak_now"
                 android:layout_marginBottom="20dp">
 
                 <com.google.android.material.textfield.TextInputEditText

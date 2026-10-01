@@ -1,9 +1,13 @@
 package com.fll.pushtogithub
 
+import android.content.Intent
 import android.os.Bundle
+import android.speech.RecognizerIntent
 import android.text.Html
 import android.view.View
+import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
@@ -12,6 +16,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Locale
 
 /**
  * One-time setup screen. An adult enters the team GitHub token, repo details,
@@ -25,6 +30,37 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var settings: Settings
 
+    private var activeVoiceTarget: EditText? = null
+
+    private val voiceRecognizerLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK && result.data != null) {
+            val matches = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            val spokenText = matches?.firstOrNull()?.trim()
+            if (!spokenText.isNullOrBlank() && activeVoiceTarget != null) {
+                val currentText = activeVoiceTarget?.text?.toString().orEmpty()
+                val updatedText = if (currentText.isBlank()) spokenText else "$currentText $spokenText"
+                activeVoiceTarget?.setText(updatedText)
+                activeVoiceTarget?.setSelection(updatedText.length)
+            }
+        }
+    }
+
+    private fun launchVoiceInput(targetEditText: EditText) {
+        activeVoiceTarget = targetEditText
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak into microphone…")
+        }
+        try {
+            voiceRecognizerLauncher.launch(intent)
+        } catch (_: Exception) {
+            Toast.makeText(this, "Voice recognition is not available on this device.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
@@ -37,6 +73,10 @@ class SettingsActivity : AppCompatActivity() {
         binding.buttonSave.setOnClickListener { saveFromFields(showToast = true) }
         binding.buttonTest.setOnClickListener { testConnection() }
         binding.buttonSyncRoster.setOnClickListener { syncRosterFromGitHub() }
+
+        binding.layoutTabletName.setEndIconOnClickListener { launchVoiceInput(binding.inputTabletName) }
+        binding.layoutTeamRoster.setEndIconOnClickListener { launchVoiceInput(binding.inputTeamRoster) }
+        binding.layoutRobotNicknames.setEndIconOnClickListener { launchVoiceInput(binding.inputRobotNicknames) }
 
         // Clear stale status when the user edits anything.
         val clearStatus: (CharSequence?) -> Unit = { binding.statusText.text = "" }

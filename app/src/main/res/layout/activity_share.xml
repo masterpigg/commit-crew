@@ -37,9 +37,12 @@
 
             <!-- Project name (auto-detected from filename, editable) -->
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutProjectName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/label_project_name"
+                app:endIconMode="custom"
+                app:endIconDrawable="@android:drawable/ic_btn_speak_now"
                 android:layout_marginBottom="16dp">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -110,9 +113,12 @@
 
             <!-- Comment -->
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutComment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/comment_label"
+                app:endIconMode="custom"
+                app:endIconDrawable="@android:drawable/ic_btn_speak_now"
                 android:layout_marginBottom="20dp">
 
                 <com.google.android.material.textfield.TextInputEditText
