@@ -68,7 +68,7 @@ your-repo/
    - **Branch** (usually `main`)
    - **Base path** (usually `robot-game`)
    - **Tablet name** (e.g. `Tablet A`, `Dad's Tablet`)
-   - **Team roster** (comma-separated, include coaches: `Fido, Whiskers, Polly, Bubbles, Nibbles, Thumper, Patches, Coach Owl, Coach Pigg`)
+   - **Team roster** (comma-separated, include coaches: `Fido, Whiskers, Polly, Bubbles, Coach Owl`)
    - **Robot nicknames** (optional: `Robot Alpha, Robot Beta`)
 4. Tap **Test Connection** to verify everything works.
 
@@ -112,7 +112,7 @@ robot-game/
 ### Commit Message Format
 
 ```
-Run 1 (#7) [Bubbles, Patches] (Tablet A, Robot Alpha) — 2026-09-13 — Tuned gyro turn
+Run 1 (#7) [Fido, Whiskers] (Tablet A, Robot Alpha) — 2026-09-13 — Tuned gyro turn
 ```
 
 - **Project name** + **issue link** (if associated) + **contributors** + **tablet** (+ optional **robot**) + **date** + **comment**.

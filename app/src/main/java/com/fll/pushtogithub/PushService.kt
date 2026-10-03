@@ -205,7 +205,7 @@ class PushService(private val settings: Settings) {
 
     /**
      * Build the standardized commit message:
-     * Run 1 (#7) [Bubbles, Patches] (Tablet A, Robot Alpha) — 2026-09-13 — Tuned gyro turn
+     * Run 1 (#7) [Fido, Whiskers] (Tablet A, Robot Alpha) — 2026-09-13 — Tuned gyro turn
      */
     private fun buildCommitMessage(
         projectName: String,

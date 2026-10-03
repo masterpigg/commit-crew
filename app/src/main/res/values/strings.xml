@@ -20,12 +20,12 @@
     <string name="settings_saved">Setup saved.</string>
     <string name="need_connection_fields">Please enter Token, Repo owner, and Repo name first.</string>
     <string name="need_setup_on_settings">Please fill in Token, Repo owner, Repo name, and Team roster.</string>
-    <string name="hint_owner">e.g. masterpigg</string>
-    <string name="hint_repo">e.g. final-first-lego-league</string>
+    <string name="hint_owner">e.g. your-github-username</string>
+    <string name="hint_repo">e.g. fll-team-workspace</string>
     <string name="hint_branch">e.g. main</string>
     <string name="hint_base_path">e.g. robot-game</string>
     <string name="hint_tablet_name">e.g. Tablet A, Dad\'s Tablet</string>
-    <string name="hint_team_roster">e.g. Fido, Whiskers, Polly, Bubbles, Coach Pigg</string>
+    <string name="hint_team_roster">e.g. Fido, Whiskers, Polly, Coach Owl</string>
     <string name="hint_robot_nicknames">e.g. Robot Alpha, Robot Beta</string>
 
     <!-- Security card -->
