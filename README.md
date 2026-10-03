@@ -64,7 +64,8 @@ your-team-repo/
 
 There is no Play Store listing yet. Either:
 
-- **Download a build:** open the latest successful run of the [Build Android & iOS workflow](https://github.com/masterpigg/push-to-github/actions/workflows/build.yml) (you must be signed in to GitHub) and download the `app-debug-apk` artifact, or
+- **Download a release:** grab the `.apk` from the latest [GitHub Release](https://github.com/masterpigg/push-to-github/releases/latest), or
+- **Download a development build:** open the latest successful run of the [Build Android & iOS workflow](https://github.com/masterpigg/push-to-github/actions/workflows/build.yml) (you must be signed in to GitHub) and download the `app-debug-apk` artifact, or
 - **Build it yourself** (see [Building from source](#building-from-source)).
 
 Then install the APK on each team tablet. You will need to allow installing apps from unknown sources. The app needs Android 7.0 or newer, and the free **LEGO Education SPIKE** app for the code features.
@@ -161,6 +162,33 @@ cd push-to-github
 
 On Windows use `.\gradlew.bat` instead of `./gradlew`. If Gradle cannot find Java, point `JAVA_HOME` at Android Studio's bundled JDK, for example `$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"` in PowerShell.
 
+### Publishing a release
+
+Pushing a tag that starts with `v` runs the [Release APK workflow](.github/workflows/release.yml). It runs the unit tests, builds a signed release APK and attaches it to a new GitHub Release with generated notes:
+
+```bash
+git tag v1.2.0
+git push origin v1.2.0
+```
+
+The version name comes from the tag (`v1.2.0` becomes `1.2.0`) and the version code from the workflow's run number. The workflow needs a signing key, set up once:
+
+1. Create a keystore (keep it and its passwords somewhere safe; Android only installs updates signed with the same key):
+   ```bash
+   keytool -genkeypair -v -keystore release.keystore -alias push-to-github -keyalg RSA -keysize 2048 -validity 10000
+   ```
+2. Base64-encode it: `base64 -w0 release.keystore` on Linux, `base64 -i release.keystore` on macOS, or `[Convert]::ToBase64String([IO.File]::ReadAllBytes("release.keystore"))` in PowerShell.
+3. In the repository, go to **Settings → Secrets and variables → Actions** and add these secrets:
+
+   | Secret | Value |
+   |:---|:---|
+   | `RELEASE_KEYSTORE_BASE64` | The base64 text from step 2 |
+   | `RELEASE_KEYSTORE_PASSWORD` | The keystore password |
+   | `RELEASE_KEY_ALIAS` | The alias, e.g. `push-to-github` |
+   | `RELEASE_KEY_PASSWORD` | The key password (the same as the keystore password unless you set a different one) |
+
+Never commit the keystore; `*.keystore` is already in `.gitignore`. To build a signed release locally, set `RELEASE_KEYSTORE_PATH` and the three password and alias variables before running `./gradlew :app:assembleRelease`. Without them the build produces an unsigned APK.
+
 ### Project layout
 
 | Module | Contents |
@@ -168,6 +196,7 @@ On Windows use `.\gradlew.bat` instead of `./gradlew`. If Gradle cannot find Jav
 | `app/` | The Android app (Kotlin, View-based UI): activities, GitHub REST client, encrypted settings, `.llsp3` extraction |
 | `shared/` | Kotlin Multiplatform code shared with a future iOS app: data models, FLL Core Values, README templates, owner colors |
 | `.github/workflows/build.yml` | CI: runs unit tests and builds the debug APK on every push and pull request, and builds the shared module for iOS on macOS |
+| `.github/workflows/release.yml` | Release: on a `v*` tag, builds a signed release APK and publishes it as a GitHub Release |
 
 ---
 

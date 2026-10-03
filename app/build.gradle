@@ -35,15 +35,34 @@ android {
         applicationId "com.fll.pushtogithub"
         minSdk 24        // Android 7.0 — matches LEGO SPIKE app's minimum
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        // The release workflow sets these from the pushed tag (v1.2.0 -> 1.2.0) and run number.
+        versionCode((System.getenv("VERSION_CODE") ?: "1").toInteger())
+        versionName(System.getenv("VERSION_NAME") ?: "1.0")
 
         buildConfigField "String", "GIT_HASH", "\"${getGitHash()}\""
         buildConfigField "String", "GIT_TAG", "\"${getGitTag()}\""
     }
 
+    // Release signing comes from environment variables so the keystore never lives in the repo.
+    // Without RELEASE_KEYSTORE_PATH, assembleRelease still works but produces an unsigned APK.
+    def releaseKeystore = System.getenv("RELEASE_KEYSTORE_PATH")
+
+    signingConfigs {
+        if (releaseKeystore) {
+            release {
+                storeFile file(releaseKeystore)
+                storePassword System.getenv("RELEASE_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword System.getenv("RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (releaseKeystore) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
