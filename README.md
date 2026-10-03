@@ -1,140 +1,188 @@
 # Push to Team GitHub
 
-An Android app that helps a FIRST LEGO League (FLL) team save their LEGO SPIKE Prime code, meeting notes, and robot designs to a shared GitHub repository — without any Git knowledge.
+[![Build Android & iOS](https://github.com/masterpigg/push-to-github/actions/workflows/build.yml/badge.svg)](https://github.com/masterpigg/push-to-github/actions/workflows/build.yml)
 
-## What It Does
+An Android tablet app that teaches a FIRST LEGO League (FLL) Challenge team the basics of **Kanban** and **version control** by doing them for real. Kids move sticky-note tasks across a board, save their LEGO® SPIKE™ Prime code as checkpoints, and snap photos of meeting notes, and everything lands in the team's own GitHub repository. Nobody on the team needs to know Git.
 
-| Feature | Description |
-|:---|:---|
-| **Save Robot Code** | Share a `.llsp3` project from the SPIKE app → app auto-detects the project name, asks who worked on it, and pushes to GitHub. |
-| **Time Machine** | Browse past checkpoints of any project. Restore any version by tapping "Open this in SPIKE." Nothing is ever deleted. |
-| **Documentation Upload** | Share photos, PDFs, or notes from Camera, Google Keep, Word, Drive, etc. → picks a category (Meeting Notes / Robot Design / Innovation Project) and commits. |
-| **Contributor Attribution** | Tap name chips to record who worked on each push. Names "stick" for the day so you don't re-select every time. |
+It was built for a team of kids ages 10 to 13 and their coaches, and it is designed so a tablet can be handed to a kid without risk to the coach's GitHub account.
 
-## Screens
-
-### 1. Team Code (Home / Time Machine)
-The launcher screen. Shows all project folders from the repo with their last push info. Pull to refresh. Tap **Open in SPIKE** to download the latest, or **View Checkpoints ⏪** to browse history and restore older versions.
-
-### 2. Save Checkpoint (Share from SPIKE)
-Triggered when a kid shares a `.llsp3` from SPIKE. Auto-fills the project name. Select contributor chips, optionally pick which robot, write a comment about what changed, and push.
-
-### 3. Documentation Upload
-Triggered when sharing images, PDFs, or text from any app. Pick a category, add a title, select contributors, and commit.
-
-### 4. Setup (Settings)
-One-time coach setup: GitHub token, repo details, tablet name, team roster, and optional robot nicknames.
+> **Project status:** Android is the supported platform and is used by a real team during the season. The shared Kotlin Multiplatform module also builds for iOS in CI, but there is no iOS app and iOS is **untested**.
 
 ---
 
-## Setup Instructions
+## What it does
 
-### 1. Create the GitHub Repository
+The app has three tabs, plus share targets so other apps can send files straight to GitHub.
 
-Create a repository (private is fine) with this folder structure:
+| Tab | What kids do | What happens on GitHub |
+|:---|:---|:---|
+| **📋 Task Board** (home screen) | Add sticky notes, drag them between **To-Do 📌**, **Doing 🛠️** and **Done ✅**, tag who is working on each one, its category (Robot Game, Innovation, General) and the FLL Core Values it shows. Filter by category, worker or Core Value. | Each sticky note is a GitHub **issue**. Columns, workers, categories and Core Values are issue **labels**. |
+| **📸 Snap Notes** | Take a photo or pick a file, optionally transcribe handwriting with on-device OCR, pick a category (Meeting Notes, Robot Design, Innovation Project), tap who contributed, and push. Browse everything saved so far. | A commit into `meeting-notes/`, `robot-game/design/` or `innovation-project/`. Large photos are compressed first. |
+| **🤖 Team Code** (Time Machine) | See every robot program, when it was last pushed and by whom. **Open in SPIKE** downloads the latest copy. **View Checkpoints ⏪** lists past versions, and any of them can be reopened in SPIKE. Old projects can be archived. | Reads the commit history. Restoring a version makes a new commit, so nothing is ever deleted. |
+
+**Saving robot code.** In the SPIKE app, tap **Share** on a project and pick **Push Robot Code to GitHub**. The app fills in the project name, asks who worked on it (names stay selected for the rest of the day), which robot it was for (optional), and what changed. It then commits the `.llsp3` file, an unzipped copy of its contents so changes show up as readable diffs, and a kid-friendly `README.md` for that project.
+
+**Sharing documents.** Photos, PDFs, Word files and text shared from any other app (Camera, Google Keep, Drive, Word, ...) open the **Push Snap Notes / Docs to GitHub** screen.
+
+**Voice input.** Text fields such as comments and sticky-note titles have a microphone button for speech-to-text, so kids can talk instead of type.
+
+---
+
+## Getting started (for coaches)
+
+### 1. Create the team repository
+
+Create a new GitHub repository for your team. **We strongly recommend making it private**, because it will hold your team members' first names (as labels and in commit messages) and photos of their work.
+
+You can start with an empty repository. The first time the app connects it creates the labels it needs and adds starter `README.md` files, giving this layout:
 
 ```
-your-repo/
-├── robot-game/       ← Base path for robot code (projects go here as sub-folders)
-│   └── design/       ← Robot design photos
-├── meeting-notes/    ← Meeting notes, photos, etc.
-├── research-project/ ← Innovation project documentation
-└── planning/         ← Optional: team planning docs
+your-team-repo/
+├── README.md             ← Team info, season goals and roster links (fill in the blanks)
+├── robot-game/           ← SPIKE Prime projects, one sub-folder per project
+│   └── design/           ← Robot design photos and sketches
+├── innovation-project/   ← Innovation Project research and notes
+└── meeting-notes/        ← Meeting notes, whiteboard photos, reflections
 ```
 
-### 2. Create a Safe GitHub Token
+### 2. Create a tightly scoped GitHub token
 
-> **⚠️ Important:** This token will be on a tablet used by kids. Scope it tightly.
+> **⚠️ This token will live on a tablet used by kids. Scope it to one repository and nothing else.**
 
-1. Go to **GitHub → Profile → Settings → Developer settings**.
-2. **Personal access tokens → Fine-grained tokens → Generate new token**.
-3. **Token name:** `FLL Tablet - Robot Game Sync`
-4. **Expiration:** End of season (e.g. 90 days).
-5. **Repository access:** **Only select repositories** → pick your team repo.
-6. **Permissions → Repository permissions:**
-   - ✅ **Contents: Read and write** (allows pushing code/files).
-   - ✅ **Metadata: Read-only** (auto-set, required).
-   - ❌ Everything else: **No access**.
-7. **Account permissions:** All **No access**.
+1. On GitHub go to **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**.
+2. **Token name:** something like `FLL Tablet`.
+3. **Expiration:** the end of your season (for example 90 days).
+4. **Repository access:** **Only select repositories**, then pick your team repository.
+5. **Repository permissions:**
+   - ✅ **Contents: Read and write** (saving code, notes and photos)
+   - ✅ **Issues: Read and write** (the Task Board)
+   - ✅ **Metadata: Read-only** (set automatically, required)
+   - ❌ Everything else: **No access**
+6. **Account permissions:** leave all at **No access**.
 
-### 3. Install & Configure the App
+### 3. Install the app
 
-1. Build and install the APK on each team tablet.
-2. Open the app → it will redirect to Settings on first launch.
-3. Enter:
-   - **GitHub token** (from step 2)
-   - **Repo owner** (your GitHub username)
-   - **Repo name**
-   - **Branch** (usually `main`)
-   - **Base path** (usually `robot-game`)
-   - **Tablet name** (e.g. `Tablet A`, `Dad's Tablet`)
-   - **Team roster** (comma-separated, include coaches: `Fido, Whiskers, Polly, Bubbles, Coach Owl`)
-   - **Robot nicknames** (optional: `Robot Alpha, Robot Beta`)
-4. Tap **Test Connection** to verify everything works.
+There is no Play Store listing yet. Either:
 
----
+- **Download a build:** open the latest successful run of the [Build Android & iOS workflow](https://github.com/masterpigg/push-to-github/actions/workflows/build.yml) (you must be signed in to GitHub) and download the `app-debug-apk` artifact, or
+- **Build it yourself** (see [Building from source](#building-from-source)).
 
-## Security Model
+Then install the APK on each team tablet. You will need to allow installing apps from unknown sources. The app needs Android 7.0 or newer, and the free **LEGO Education SPIKE** app for the code features.
 
-This app is designed to be **safe for kids ages 10–13** to use unsupervised:
+### 4. Set up each tablet
 
-| Threat | How It's Handled |
+Open the app. On first launch it goes straight to **Team GitHub Setup** (later you can reach it from the gear button in the toolbar). Fill in:
+
+| Field | Example |
 |:---|:---|
-| Kid tries to delete the repo | Token has no `Administration` permission → GitHub returns 403. |
-| Kid tries to access coach's other repos | Fine-grained PAT is scoped to exactly 1 repository → other repos are invisible. |
-| Kid tries to rewrite history | GitHub Contents API only creates forward commits; it has no force-push capability. |
-| Kid tries to delete the main branch | GitHub permanently forbids deleting the default branch, even without rulesets. |
-| Kid pushes garbage over a working file | Every past version is preserved in Git history. Recoverable via the Time Machine or `git revert` on the coach's laptop. |
-| Token is extracted from the tablet | Token is stored in `EncryptedSharedPreferences` (Android Keystore). Not readable as plain text on disk. |
+| GitHub token | the token from step 2 |
+| Repo owner | your GitHub username or organization |
+| Repo name | `fll-team-workspace` |
+| Branch | `main` |
+| Folder in repo for robot code | `robot-game` |
+| Tablet name | `Tablet A`, `Coach's Tablet` |
+| Team roster (comma-separated, include coaches) | `Fido, Whiskers, Polly, Bubbles, Nibbles, Coach Pigg, Coach Owl` |
+| Robot nicknames (optional) | `Robot Alpha, Robot Beta` |
 
-> **Coach tip:** Run `git pull` on your laptop periodically as an additional backup.
+Tap **Test connection**, then **Save setup**. Names that start with "Coach" are shown in gray on the board so adult tasks stand out from the kids' tasks.
+
+> **Tip:** Use first names or nicknames in the roster, not full names.
 
 ---
 
-## How It Works (Technical)
+## Safety model
 
-### File Layout in the Repo
+The app is meant to be safe for kids ages 10 to 13 to use without an adult watching every tap.
 
-Each time a kid pushes code, the app commits:
+| Worry | How it is handled |
+|:---|:---|
+| A kid deletes or renames the repository | The token has no **Administration** permission, so GitHub refuses. |
+| A kid reaches the coach's other repositories | The fine-grained token can see exactly one repository. |
+| A kid erases history | The app only makes forward commits through the GitHub Contents API. It cannot force-push. |
+| A kid deletes the main branch | GitHub never allows deleting a repository's default branch. |
+| A kid saves broken code over working code | Every version stays in Git history and can be reopened from the Time Machine, or reverted from a laptop. |
+| Someone copies the token off the tablet | The token is stored with `EncryptedSharedPreferences`, backed by the Android Keystore, and app backups are disabled. |
+
+The token is only ever sent to `api.github.com`. The app has no analytics, no ads and no server of its own. Handwriting OCR runs on the device using Google ML Kit, and voice input uses Android's built-in speech recognizer.
+
+> **Coach tip:** run `git pull` on a laptop now and then as an extra backup.
+
+---
+
+## How it works
+
+### What a code push commits
 
 ```
 robot-game/
 └── Run 1/
-    ├── Run 1.llsp3           ← Latest version (overwritten each push)
-    ├── .github-issue         ← Optional: {"issue": 7} (coach sets once)
-    └── extracted/            ← Full mirror of the .llsp3 ZIP contents
-        ├── project.json      ← Scratch blocks (pretty-printed for diffs)
-        ├── manifest.json     ← Project metadata (pretty-printed)
-        ├── icon.svg          ← Project icon/preview
-        └── ...               ← Any other files inside the archive
+    ├── Run 1.llsp3       ← Latest version (overwritten on each push; history keeps the rest)
+    ├── README.md         ← Kid-friendly summary with a preview and recent history
+    └── extracted/        ← Unzipped contents of the .llsp3, for readable diffs
+        ├── project.json  ← Scratch blocks, pretty-printed
+        ├── manifest.json ← Project metadata, pretty-printed
+        └── ...           ← Icons and any other files in the archive
 ```
 
-### Commit Message Format
+### Commit messages
 
 ```
 Run 1 (#7) [Fido, Whiskers] (Tablet A, Robot Alpha) — 2026-09-13 — Tuned gyro turn
 ```
 
-- **Project name** + **issue link** (if associated) + **contributors** + **tablet** (+ optional **robot**) + **date** + **comment**.
+That is the project name, the linked issue (if a coach linked one from the Time Machine), who worked on it, the tablet and optional robot, the date, and the kid's comment. Git's commit log *is* the version history, and the Time Machine is a kid-friendly view of it.
 
-### Version History
+### Task Board labels
 
-Git's commit log IS the version history. The Time Machine screen provides a kid-friendly interface to browse it. Restoring an old version creates a new forward commit — nothing is ever deleted.
+The app creates and uses these labels in the team repository:
+
+- `todo`, `doing`, `done` for the columns
+- one label per roster name for who is working on a task
+- `core-value:discovery`, `core-value:innovation`, `core-value:impact`, `core-value:inclusion`, `core-value:teamwork`, `core-value:fun` for the FLL Core Values
+
+If the repository is linked to a GitHub Project (v2), the app also picks up the colors of that project's select-field options.
 
 ---
 
-## Building
+## Building from source
 
-```powershell
-# Set JAVA_HOME if needed
-$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+**Requirements:** JDK 17 and the Android SDK (installing [Android Studio](https://developer.android.com/studio) gives you both). The Gradle wrapper downloads Gradle itself.
 
-# Build debug APK
-.\gradlew.bat assembleDebug
+```bash
+git clone https://github.com/masterpigg/push-to-github.git
+cd push-to-github
 
-# Output: app\build\outputs\apk\debug\app-debug.apk
+# Run the unit tests
+./gradlew :shared:testDebugUnitTest :app:testDebugUnitTest
+
+# Build a debug APK → app/build/outputs/apk/debug/app-debug.apk
+./gradlew :app:assembleDebug
 ```
+
+On Windows use `.\gradlew.bat` instead of `./gradlew`. If Gradle cannot find Java, point `JAVA_HOME` at Android Studio's bundled JDK, for example `$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"` in PowerShell.
+
+### Project layout
+
+| Module | Contents |
+|:---|:---|
+| `app/` | The Android app (Kotlin, View-based UI): activities, GitHub REST client, encrypted settings, `.llsp3` extraction |
+| `shared/` | Kotlin Multiplatform code shared with a future iOS app: data models, FLL Core Values, README templates, owner colors |
+| `.github/workflows/build.yml` | CI: runs unit tests and builds the debug APK on every push and pull request, and builds the shared module for iOS on macOS |
+
+---
+
+## Contributing
+
+Issues and pull requests are welcome, especially from other FLL coaches and teams. Please:
+
+- Run the unit tests before opening a pull request.
+- Use made-up names in examples, tests and screenshots, never real kids' names.
+- Keep the app safe for unsupervised kids: no new token permissions without a good reason.
+
+## Trademarks
+
+FIRST® and FIRST® LEGO® League are registered trademarks of FIRST. LEGO® and SPIKE™ are trademarks of the LEGO Group. This is an independent, unofficial project and is not endorsed by FIRST or the LEGO Group.
 
 ## License
 
-Internal tool for FLL team use.
+No license has been chosen yet, so for now all rights are reserved by the author. Please open an issue if you would like to use or adapt the code.
