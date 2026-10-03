@@ -6,11 +6,12 @@ import com.fll.pushtogithub.shared.CoreValue
 import com.fll.pushtogithub.shared.KanbanCard
 import com.fll.pushtogithub.shared.ProjectFolder
 import com.fll.pushtogithub.shared.ReadmeTemplates
-import android.util.Base64
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okio.ByteString.Companion.decodeBase64
+import okio.ByteString.Companion.toByteString
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
@@ -22,12 +23,14 @@ import java.util.concurrent.TimeUnit
  * querying project folder listings and commit history.
  *
  * Uses only standard REST endpoints — no native git on the tablet.
+ * [apiBase] is only overridden by unit tests, which point it at a local mock server.
  */
 class GitHubClient(
     private val token: String,
     private val owner: String,
     private val repo: String,
-    private val branch: String
+    private val branch: String,
+    private val apiBase: String = API_BASE
 ) {
     private val http = OkHttpClient.Builder()
         .connectTimeout(20, TimeUnit.SECONDS)
@@ -48,7 +51,7 @@ class GitHubClient(
      * human-readable error message on failure.
      */
     fun testConnection(): String? {
-        val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}"
+        val url = "$apiBase/repos/${enc(owner)}/${enc(repo)}"
         val request = baseRequest(url).get().build()
         return try {
             http.newCall(request).execute().use { resp ->
@@ -70,7 +73,7 @@ class GitHubClient(
      * project (e.g. "Run 1", "Run 2", "Gyro Test").
      */
     fun listFolders(basePath: String): List<ProjectFolder> {
-        val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/contents/${encPath(basePath)}" +
+        val url = "$apiBase/repos/${enc(owner)}/${enc(repo)}/contents/${encPath(basePath)}" +
             "?ref=${enc(branch)}"
         val request = baseRequest(url).get().build()
         return try {
@@ -101,7 +104,7 @@ class GitHubClient(
      * Returns commits touching that file, most recent first.
      */
     fun getFileHistory(filePath: String, perPage: Int = 30): List<CommitInfo> {
-        val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/commits" +
+        val url = "$apiBase/repos/${enc(owner)}/${enc(repo)}/commits" +
             "?path=${enc(filePath)}&sha=${enc(branch)}&per_page=$perPage"
         val request = baseRequest(url).get().build()
         return try {
@@ -133,7 +136,7 @@ class GitHubClient(
      * Returns the raw bytes of the file, or null if not found.
      */
     fun getFileAtCommit(filePath: String, commitSha: String): ByteArray? {
-        val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/contents/${encPath(filePath)}" +
+        val url = "$apiBase/repos/${enc(owner)}/${enc(repo)}/contents/${encPath(filePath)}" +
             "?ref=${enc(commitSha)}"
         val request = baseRequest(url).get().build()
         return try {
@@ -141,9 +144,10 @@ class GitHubClient(
                 if (!resp.isSuccessful) return null
                 val text = resp.body?.string().orEmpty()
                 val obj = JSONObject(text)
-                val content = obj.optString("content").replace("\\n", "").replace("\\r", "")
+                val content = obj.optString("content")
                 if (content.isBlank()) return null
-                Base64.decode(content, Base64.DEFAULT)
+                // GitHub wraps the base64 every 60 chars; okio skips the line breaks.
+                content.decodeBase64()?.toByteArray()
             }
         } catch (e: Exception) {
             null
@@ -220,7 +224,7 @@ class GitHubClient(
         val docs = mutableListOf<DocFile>()
 
         for (cat in categories) {
-            val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/contents/${encPath(cat)}?ref=${enc(branch)}"
+            val url = "$apiBase/repos/${enc(owner)}/${enc(repo)}/contents/${encPath(cat)}?ref=${enc(branch)}"
             val request = baseRequest(url).get().build()
             try {
                 http.newCall(request).execute().use { resp ->
@@ -286,7 +290,7 @@ class GitHubClient(
             put("branch", branch)
         }
 
-        val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/contents/${encPath(path)}"
+        val url = "$apiBase/repos/${enc(owner)}/${enc(repo)}/contents/${encPath(path)}"
         val request = baseRequest(url)
             .delete(body.toString().toRequestBody(JSON))
             .build()
@@ -303,7 +307,7 @@ class GitHubClient(
         val colors = mutableMapOf<String, String>()
 
         // 1. First fetch repository label colors via REST API as baseline
-        val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/labels?per_page=100"
+        val url = "$apiBase/repos/${enc(owner)}/${enc(repo)}/labels?per_page=100"
         val request = baseRequest(url).get().build()
         try {
             http.newCall(request).execute().use { resp ->
@@ -476,7 +480,7 @@ class GitHubClient(
 
     /** One-time migration: Move all files from [oldFolder] to [newFolder] on GitHub. */
     fun migrateFolder(oldFolder: String, newFolder: String) {
-        val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/contents/${encPath(oldFolder)}?ref=${enc(branch)}"
+        val url = "$apiBase/repos/${enc(owner)}/${enc(repo)}/contents/${encPath(oldFolder)}?ref=${enc(branch)}"
         val request = baseRequest(url).get().build()
         try {
             http.newCall(request).execute().use { resp ->
@@ -529,7 +533,7 @@ class GitHubClient(
             put("variables", variables)
         }
         val request = Request.Builder()
-            .url("https://api.github.com/graphql")
+            .url("$apiBase/graphql")
             .header("Authorization", "Bearer $token")
             .header("Accept", "application/json")
             .post(json.toString().toRequestBody(JSON))
@@ -559,7 +563,7 @@ class GitHubClient(
 
     /** Create a label on GitHub if it doesn't exist yet. */
     fun ensureLabelExists(labelName: String, colorHex: String, description: String) {
-        val checkUrl = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/labels/${enc(labelName)}"
+        val checkUrl = "$apiBase/repos/${enc(owner)}/${enc(repo)}/labels/${enc(labelName)}"
         val checkReq = baseRequest(checkUrl).get().build()
         val exists = try {
             http.newCall(checkReq).execute().use { resp -> resp.isSuccessful }
@@ -573,7 +577,7 @@ class GitHubClient(
                 put("color", colorHex)
                 put("description", description)
             }
-            val createUrl = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/labels"
+            val createUrl = "$apiBase/repos/${enc(owner)}/${enc(repo)}/labels"
             val createReq = baseRequest(createUrl)
                 .post(json.toString().toRequestBody(JSON))
                 .build()
@@ -590,7 +594,7 @@ class GitHubClient(
      * Returns null if the file does not exist or on error.
      */
     fun getLatestCommitSha(filePath: String): String? {
-        val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/commits" +
+        val url = "$apiBase/repos/${enc(owner)}/${enc(repo)}/commits" +
             "?path=${enc(filePath)}&sha=${enc(branch)}&per_page=1"
         val request = baseRequest(url).get().build()
         return try {
@@ -617,12 +621,12 @@ class GitHubClient(
 
         val body = JSONObject().apply {
             put("message", commitMessage)
-            put("content", Base64.encodeToString(bytes, Base64.NO_WRAP))
+            put("content", bytes.toByteString().base64())
             put("branch", branch)
             if (existingSha != null) put("sha", existingSha)
         }
 
-        val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/contents/${encPath(path)}"
+        val url = "$apiBase/repos/${enc(owner)}/${enc(repo)}/contents/${encPath(path)}"
         val request = baseRequest(url)
             .put(body.toString().toRequestBody(JSON))
             .build()
@@ -643,7 +647,7 @@ class GitHubClient(
 
     /** Get all Kanban cards / GitHub issues for this repository. */
     fun getKanbanCards(teamRoster: List<String> = emptyList()): List<KanbanCard> {
-        val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/issues?state=all&per_page=100"
+        val url = "$apiBase/repos/${enc(owner)}/${enc(repo)}/issues?state=all&per_page=100"
         val request = baseRequest(url).get().build()
         return try {
             http.newCall(request).execute().use { resp ->
@@ -798,7 +802,7 @@ class GitHubClient(
             put("labels", JSONArray(labels.distinct()))
         }
 
-        val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/issues"
+        val url = "$apiBase/repos/${enc(owner)}/${enc(repo)}/issues"
         val request = baseRequest(url)
             .post(json.toString().toRequestBody(JSON))
             .build()
@@ -873,7 +877,7 @@ class GitHubClient(
             put("state", state)
         }
 
-        val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/issues/$number"
+        val url = "$apiBase/repos/${enc(owner)}/${enc(repo)}/issues/$number"
         val request = baseRequest(url)
             .patch(json.toString().toRequestBody(JSON))
             .build()
@@ -925,7 +929,7 @@ class GitHubClient(
         val json = JSONObject().apply {
             put("state", "closed")
         }
-        val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/issues/$number"
+        val url = "$apiBase/repos/${enc(owner)}/${enc(repo)}/issues/$number"
         val request = baseRequest(url)
             .patch(json.toString().toRequestBody(JSON))
             .build()
@@ -939,7 +943,7 @@ class GitHubClient(
 
     /** Return the blob SHA of an existing file, or null if it does not exist. */
     private fun getFileSha(path: String): String? {
-        val url = "$API_BASE/repos/${enc(owner)}/${enc(repo)}/contents/${encPath(path)}" +
+        val url = "$apiBase/repos/${enc(owner)}/${enc(repo)}/contents/${encPath(path)}" +
             "?ref=${enc(branch)}"
         val request = baseRequest(url).get().build()
         return try {
