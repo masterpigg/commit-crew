@@ -54,19 +54,7 @@ fun resolveOwnerColorHex(
     val repoColor = repoLabelColors[lower] ?: repoLabelColors["owner:$lower"]
     if (!repoColor.isNullOrBlank()) return repoColor
 
-    val defaultOptionsMap = mapOf(
-        "polly" to "#BF3989",          // Pink
-        "whiskers" to "#2563EB",         // Blue
-        "bubbles" to "#8957E5",            // Purple
-        "fido" to "#DA3633",          // Red
-        "thumper" to "#F59E0B",         // Yellow
-        "nibbles" to "#D97706",          // Orange
-        "patches" to "#2EA043",        // Green
-        "coach owl" to "#6E7681", // Gray
-        "coach pigg" to "#6E7681"      // Gray
-    )
-    val defaultColor = defaultOptionsMap[lower]
-    if (defaultColor != null) return defaultColor
+    if (lower.startsWith("coach")) return "#6E7681"
 
     val palette = listOf(
         "#BF3989", "#2563EB", "#8957E5", "#DA3633",

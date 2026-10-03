@@ -279,20 +279,8 @@ class KanbanActivity : AppCompatActivity() {
         val cardColor = cardColors[name] ?: cardColors[lower] ?: cardColors["owner:$lower"]
         if (!cardColor.isNullOrBlank() && cardColor != "#1976D2") return cardColor
 
-        // 3. Fallback: Default options palette matching GitHub
-        val defaultOptionsMap = mapOf(
-            "polly" to "#BF3989",          // Pink
-            "whiskers" to "#2563EB",         // Blue
-            "bubbles" to "#8957E5",            // Purple
-            "fido" to "#DA3633",          // Red
-            "thumper" to "#F59E0B",         // Yellow
-            "nibbles" to "#D97706",          // Orange
-            "patches" to "#2EA043",        // Green
-            "coach owl" to "#6E7681", // Gray
-            "coach pigg" to "#6E7681"      // Gray
-        )
-        val defaultColor = defaultOptionsMap[lower]
-        if (defaultColor != null) return defaultColor
+        // 3. Coaches always get the neutral gray
+        if (lower.startsWith("coach")) return "#6E7681"
 
         // 4. Fallback: Deterministic palette based on name hash
         val palette = listOf(

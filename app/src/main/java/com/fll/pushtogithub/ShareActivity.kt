@@ -192,19 +192,7 @@ class ShareActivity : AppCompatActivity() {
 
     private fun getOwnerColorHex(name: String): String {
         val lower = name.lowercase().trim()
-        val defaultOptionsMap = mapOf(
-            "fido" to "#E53935",          // Red
-            "whiskers" to "#F57C00",         // Orange
-            "polly" to "#FFB300",           // Yellow
-            "bubbles" to "#43A047",            // Green
-            "nibbles" to "#1E88E5",          // Blue
-            "thumper" to "#8E24AA",         // Purple
-            "patches" to "#D81B60",        // Pink
-            "coach owl" to "#546E7A", // Slate
-            "coach pigg" to "#546E7A"      // Slate
-        )
-        val defaultColor = defaultOptionsMap[lower]
-        if (defaultColor != null) return defaultColor
+        if (lower.startsWith("coach")) return "#546E7A"
 
         val palette = listOf(
             "#E53935", "#F57C00", "#FFB300", "#43A047",

@@ -579,21 +579,10 @@ class GitHubClient(
 
     /** Ensure clean name labels exist for all team members. */
     fun ensureOwnerLabelsExist(teamRoster: List<String>) {
-        val defaultColors = mapOf(
-            "polly" to "BF3989",           // Pink
-            "whiskers" to "2563EB",         // Blue
-            "bubbles" to "8957E5",            // Purple
-            "fido" to "DA3633",          // Red
-            "thumper" to "F59E0B",         // Yellow
-            "nibbles" to "D97706",          // Orange
-            "patches" to "2EA043",        // Green
-            "coach owl" to "6E7681", // Gray
-            "coach pigg" to "6E7681"      // Gray
-        )
         val fallbackColors = listOf("BF3989", "2563EB", "8957E5", "DA3633", "F59E0B", "D97706", "2EA043", "6E7681")
         for ((index, name) in teamRoster.withIndex()) {
             val lower = name.lowercase().trim()
-            val color = defaultColors[lower] ?: fallbackColors[index % fallbackColors.size]
+            val color = if (lower.startsWith("coach")) "6E7681" else fallbackColors[index % fallbackColors.size]
             ensureLabelExists(name, color, "Team Member: $name")
         }
     }
