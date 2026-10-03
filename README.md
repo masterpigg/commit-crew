@@ -1,6 +1,6 @@
-# Push to Team GitHub
+# Commit Crew
 
-[![Build Android & iOS](https://github.com/masterpigg/push-to-github/actions/workflows/build.yml/badge.svg)](https://github.com/masterpigg/push-to-github/actions/workflows/build.yml)
+[![Build Android & iOS](https://github.com/masterpigg/commit-crew/actions/workflows/build.yml/badge.svg)](https://github.com/masterpigg/commit-crew/actions/workflows/build.yml)
 
 An Android tablet app that teaches a FIRST LEGO League (FLL) Challenge team the basics of **Kanban** and **version control** by doing them for real. Kids move sticky-note tasks across a board, save their LEGO® SPIKE™ Prime code as checkpoints, and snap photos of meeting notes, and everything lands in the team's own GitHub repository. Nobody on the team needs to know Git.
 
@@ -64,8 +64,8 @@ your-team-repo/
 
 There is no Play Store listing yet. Either:
 
-- **Download a release:** grab the `.apk` from the latest [GitHub Release](https://github.com/masterpigg/push-to-github/releases/latest), or
-- **Download a development build:** open the latest successful run of the [Build Android & iOS workflow](https://github.com/masterpigg/push-to-github/actions/workflows/build.yml) (you must be signed in to GitHub) and download the `app-debug-apk` artifact, or
+- **Download a release:** grab the `.apk` from the latest [GitHub Release](https://github.com/masterpigg/commit-crew/releases/latest), or
+- **Download a development build:** open the latest successful run of the [Build Android & iOS workflow](https://github.com/masterpigg/commit-crew/actions/workflows/build.yml) (you must be signed in to GitHub) and download the `app-debug-apk` artifact, or
 - **Build it yourself** (see [Building from source](#building-from-source)).
 
 Then install the APK on each team tablet. You will need to allow installing apps from unknown sources. The app needs Android 7.0 or newer, and the free **LEGO Education SPIKE** app for the code features.
@@ -150,8 +150,8 @@ If the repository is linked to a GitHub Project (v2), the app also picks up the 
 **Requirements:** JDK 17 and the Android SDK (installing [Android Studio](https://developer.android.com/studio) gives you both). The Gradle wrapper downloads Gradle itself.
 
 ```bash
-git clone https://github.com/masterpigg/push-to-github.git
-cd push-to-github
+git clone https://github.com/masterpigg/commit-crew.git
+cd commit-crew
 
 # Run the unit tests
 ./gradlew :shared:testDebugUnitTest :app:testDebugUnitTest
@@ -175,7 +175,7 @@ The version name comes from the tag (`v1.2.0` becomes `1.2.0`) and the version c
 
 1. Create a keystore (keep it and its passwords somewhere safe; Android only installs updates signed with the same key):
    ```bash
-   keytool -genkeypair -v -keystore release.keystore -alias push-to-github -keyalg RSA -keysize 2048 -validity 10000
+   keytool -genkeypair -v -keystore release.keystore -alias commit-crew -keyalg RSA -keysize 2048 -validity 10000
    ```
 2. Base64-encode it: `base64 -w0 release.keystore` on Linux, `base64 -i release.keystore` on macOS, or `[Convert]::ToBase64String([IO.File]::ReadAllBytes("release.keystore"))` in PowerShell.
 3. In the repository, go to **Settings → Secrets and variables → Actions** and add these secrets:
@@ -184,7 +184,7 @@ The version name comes from the tag (`v1.2.0` becomes `1.2.0`) and the version c
    |:---|:---|
    | `RELEASE_KEYSTORE_BASE64` | The base64 text from step 2 |
    | `RELEASE_KEYSTORE_PASSWORD` | The keystore password |
-   | `RELEASE_KEY_ALIAS` | The alias, e.g. `push-to-github` |
+   | `RELEASE_KEY_ALIAS` | The alias, e.g. `commit-crew` |
    | `RELEASE_KEY_PASSWORD` | The key password (the same as the keystore password unless you set a different one) |
 
 Never commit the keystore; `*.keystore` is already in `.gitignore`. To build a signed release locally, set `RELEASE_KEYSTORE_PATH` and the three password and alias variables before running `./gradlew :app:assembleRelease`. Without them the build produces an unsigned APK.
@@ -214,7 +214,7 @@ FIRST® and FIRST® LEGO® League are registered trademarks of FIRST. LEGO® and
 
 ## License
 
-Push to Team GitHub is free software, released under the [GNU General Public License v3.0](LICENSE).
+Commit Crew is free software, released under the [GNU General Public License v3.0](LICENSE).
 
 In plain terms: anyone can use, copy, change and share it for free. If someone distributes a changed version, they must release their source code under the same license, so the app and every version built from it stay free and open for everyone.
 

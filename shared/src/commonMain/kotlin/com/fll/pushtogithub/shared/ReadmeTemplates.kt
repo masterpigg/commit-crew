@@ -60,7 +60,7 @@ $rosterLinks
 
 ---
 
-*Powered by Push to Team GitHub 🚀*
+*Powered by Commit Crew 🚀*
         """.trimIndent()
     }
 

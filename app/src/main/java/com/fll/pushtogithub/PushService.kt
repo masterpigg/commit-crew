@@ -161,7 +161,7 @@ class PushService(private val settings: Settings) {
         }
 
         sb.append("\n---\n\n")
-        sb.append("*Generated automatically by Push to Team GitHub 🚀*\n")
+        sb.append("*Generated automatically by Commit Crew 🚀*\n")
         return sb.toString()
     }
 
