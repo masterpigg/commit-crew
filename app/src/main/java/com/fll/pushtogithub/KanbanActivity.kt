@@ -1,6 +1,8 @@
 package com.fll.pushtogithub
 
 import com.fll.pushtogithub.shared.CoreValue
+import com.fll.pushtogithub.shared.KanbanCard
+import com.fll.pushtogithub.shared.resolveOwnerColorHex
 import android.content.ClipData
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -36,7 +38,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.abs
 
 /**
  * Kid-friendly Yellow Sticky Note Kanban Board.
@@ -49,7 +50,7 @@ class KanbanActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityKanbanBinding
     private lateinit var settings: Settings
-    private val allCards = mutableListOf<GitHubClient.KanbanCard>()
+    private val allCards = mutableListOf<KanbanCard>()
 
     private var selectedCategoryFilter = "all" // "all", "robot-game", "innovation-project", "general"
     private var selectedOwnerFilter: String? = null // null for All Owners, or specific owner name
@@ -268,28 +269,8 @@ class KanbanActivity : AppCompatActivity() {
 
     private var repoLabelColors = mapOf<String, String>()
 
-    private fun resolveOwnerColor(name: String, cardColors: Map<String, String> = emptyMap()): String {
-        val lower = name.lowercase().trim()
-
-        // 1. Check live repo label / Projects v2 option colors pulled directly from GitHub
-        val repoColor = repoLabelColors[lower] ?: repoLabelColors["owner:$lower"]
-        if (!repoColor.isNullOrBlank()) return repoColor
-
-        // 2. Check card label colors
-        val cardColor = cardColors[name] ?: cardColors[lower] ?: cardColors["owner:$lower"]
-        if (!cardColor.isNullOrBlank() && cardColor != "#1976D2") return cardColor
-
-        // 3. Coaches always get the neutral gray
-        if (lower.startsWith("coach")) return "#6E7681"
-
-        // 4. Fallback: Deterministic palette based on name hash
-        val palette = listOf(
-            "#BF3989", "#2563EB", "#8957E5", "#DA3633",
-            "#F59E0B", "#D97706", "#2EA043", "#6E7681"
-        )
-        val index = abs(lower.hashCode()) % palette.size
-        return palette[index]
-    }
+    private fun resolveOwnerColor(name: String, cardColors: Map<String, String> = emptyMap()): String =
+        resolveOwnerColorHex(name, cardColors, repoLabelColors)
 
     private fun styleSelectableChip(chip: Chip, hexColor: String, isCheckedByDefault: Boolean = false) {
         chip.isCheckable = true
@@ -452,7 +433,7 @@ class KanbanActivity : AppCompatActivity() {
                 }
                 DragEvent.ACTION_DROP -> {
                     parentColumnView.setBackgroundColor(Color.parseColor(defaultColorHex))
-                    val card = event.localState as? GitHubClient.KanbanCard
+                    val card = event.localState as? KanbanCard
                     if (card != null && card.column != columnName) {
                         moveCardColumn(card, columnName)
                         Toast.makeText(
@@ -473,7 +454,7 @@ class KanbanActivity : AppCompatActivity() {
     }
 
     private data class KanbanLoadResult(
-        val cards: List<GitHubClient.KanbanCard>,
+        val cards: List<KanbanCard>,
         val discoveredOwners: List<String>,
         val labelColors: Map<String, String>
     )
@@ -560,7 +541,7 @@ class KanbanActivity : AppCompatActivity() {
         binding.recyclerDone.adapter = StickyNoteAdapter(doneCards)
     }
 
-    private fun moveCardColumn(card: GitHubClient.KanbanCard, newColumn: String) {
+    private fun moveCardColumn(card: KanbanCard, newColumn: String) {
         val oldColumn = card.column
         card.column = newColumn.lowercase()
         renderColumns()
@@ -598,7 +579,7 @@ class KanbanActivity : AppCompatActivity() {
         }
     }
 
-    private fun showOwnerSelectionDialog(card: GitHubClient.KanbanCard) {
+    private fun showOwnerSelectionDialog(card: KanbanCard) {
         val roster = settings.teamRoster
         if (roster.isEmpty()) {
             Toast.makeText(this, "Add team roster in Setup first to assign workers.", Toast.LENGTH_SHORT).show()
@@ -650,7 +631,7 @@ class KanbanActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun showCoreValueSelectionDialog(card: GitHubClient.KanbanCard) {
+    private fun showCoreValueSelectionDialog(card: KanbanCard) {
         val allCv = CoreValue.entries
         val names = allCv.map { it.displayName }.toTypedArray()
         val selectedIndexes = allCv.map { cv ->
@@ -823,7 +804,7 @@ class KanbanActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun showEditStickyNoteDialog(card: GitHubClient.KanbanCard) {
+    private fun showEditStickyNoteDialog(card: KanbanCard) {
         val dialogView = LayoutInflater.from(this).inflate(
             R.layout.dialog_edit_sticky_note, null
         )
@@ -1049,7 +1030,7 @@ class KanbanActivity : AppCompatActivity() {
     // ── RecyclerView Adapter: Yellow Sticky Notes ─────────────────────────
 
     inner class StickyNoteAdapter(
-        private val items: List<GitHubClient.KanbanCard>
+        private val items: List<KanbanCard>
     ) : RecyclerView.Adapter<StickyNoteAdapter.VH>() {
 
         inner class VH(val binding: ItemStickyNoteBinding) :

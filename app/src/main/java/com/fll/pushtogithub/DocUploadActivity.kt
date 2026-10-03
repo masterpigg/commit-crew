@@ -1,6 +1,7 @@
 package com.fll.pushtogithub
 
 import com.fll.pushtogithub.shared.CoreValue
+import com.fll.pushtogithub.shared.resolveOwnerColorHex
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
@@ -42,7 +43,6 @@ import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import kotlin.math.abs
 
 /**
  * Handles uploading documentation files (photos, PDFs, text notes) to the team
@@ -382,17 +382,7 @@ class DocUploadActivity : AppCompatActivity() {
 
     // ── Contributor chips ────────────────────────────────────────────────
 
-    private fun getOwnerColorHex(name: String): String {
-        val lower = name.lowercase().trim()
-        if (lower.startsWith("coach")) return "#546E7A"
-
-        val palette = listOf(
-            "#E53935", "#F57C00", "#FFB300", "#43A047",
-            "#1E88E5", "#8E24AA", "#D81B60", "#546E7A"
-        )
-        val index = abs(lower.hashCode()) % palette.size
-        return palette[index]
-    }
+    private fun getOwnerColorHex(name: String): String = resolveOwnerColorHex(name)
 
     private fun styleSelectableChip(chip: Chip, hexColor: String, isCheckedByDefault: Boolean = false) {
         chip.isCheckable = true

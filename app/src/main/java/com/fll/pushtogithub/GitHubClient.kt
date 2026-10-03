@@ -1,6 +1,11 @@
 package com.fll.pushtogithub
 
+import com.fll.pushtogithub.shared.CommitInfo
+import com.fll.pushtogithub.shared.CommitResult
 import com.fll.pushtogithub.shared.CoreValue
+import com.fll.pushtogithub.shared.KanbanCard
+import com.fll.pushtogithub.shared.ProjectFolder
+import com.fll.pushtogithub.shared.ReadmeTemplates
 import android.util.Base64
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -30,47 +35,12 @@ class GitHubClient(
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    /** Result of a single file commit. */
-    data class CommitResult(val contentPath: String, val htmlUrl: String?)
-
-    /** A project folder entry from the repo. */
-    data class ProjectFolder(
-        val name: String,
-        val path: String,
-        val sha: String
-    )
-
     /** A saved documentation file entry from the repo. */
     data class DocFile(
         val name: String,
         val path: String,
         val category: String, // "meeting-notes", "innovation-project", "robot-game/design"
         val htmlUrl: String? = null
-    )
-
-    /** A commit entry from the file history. */
-    data class CommitInfo(
-        val sha: String,
-        val message: String,
-        val date: String,           // ISO 8601
-        val committerName: String
-    )
-
-    /** A task card / Kanban item mapped to a GitHub issue & Project v2 fields. */
-    data class KanbanCard(
-        val number: Int,
-        var title: String,
-        var body: String,
-        val state: String,       // "open" or "closed"
-        var column: String,      // "todo", "doing", "done"
-        val owners: MutableList<String>,
-        val ownerColors: MutableMap<String, String> = mutableMapOf(),
-        var category: String = "general", // "robot-game", "innovation-project", "general"
-        val coreValues: MutableList<String> = mutableListOf(),
-        var projectItemId: String? = null,
-        var projectId: String? = null,
-        var statusFieldId: String? = null,
-        var ownerFieldId: String? = null
     )
 
     /**

@@ -26,6 +26,9 @@ jobs:
       - name: Grant Execute Permission for Gradle Wrapper
         run: chmod +x gradlew
 
+      - name: Run Unit Tests
+        run: ./gradlew :shared:testDebugUnitTest :app:testDebugUnitTest --stacktrace
+
       - name: Build Android Debug APK
         run: ./gradlew :app:assembleDebug --stacktrace
 

@@ -6,7 +6,8 @@ import kotlin.math.abs
 data class ProjectFolder(
     val name: String,
     val path: String,
-    val htmlUrl: String? = null
+    val htmlUrl: String? = null,
+    val sha: String = ""
 )
 
 /** A commit entry from the file history. */
@@ -48,11 +49,12 @@ fun resolveOwnerColorHex(
 ): String {
     val lower = name.lowercase().trim()
 
-    val cardColor = cardColors[name] ?: cardColors[lower] ?: cardColors["owner:$lower"]
-    if (!cardColor.isNullOrBlank() && cardColor != "#1976D2") return cardColor
-
+    // Live repo label / Projects v2 colors from GitHub win over colors cached on the card.
     val repoColor = repoLabelColors[lower] ?: repoLabelColors["owner:$lower"]
     if (!repoColor.isNullOrBlank()) return repoColor
+
+    val cardColor = cardColors[name] ?: cardColors[lower] ?: cardColors["owner:$lower"]
+    if (!cardColor.isNullOrBlank() && cardColor != "#1976D2") return cardColor
 
     if (lower.startsWith("coach")) return "#6E7681"
 
