@@ -185,4 +185,8 @@ FIRST® and FIRST® LEGO® League are registered trademarks of FIRST. LEGO® and
 
 ## License
 
-No license has been chosen yet, so for now all rights are reserved by the author. Please open an issue if you would like to use or adapt the code.
+Push to Team GitHub is free software, released under the [GNU General Public License v3.0](LICENSE).
+
+In plain terms: anyone can use, copy, change and share it for free. If someone distributes a changed version, they must release their source code under the same license, so the app and every version built from it stay free and open for everyone.
+
+Copyright © 2026 Paul Pigg.
