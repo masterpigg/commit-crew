@@ -1,5 +1,7 @@
 package com.fll.pushtogithub
 
+import com.fll.pushtogithub.shared.CommitInfo
+import com.fll.pushtogithub.shared.ProjectFolder
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -49,7 +51,7 @@ class TimeMachineActivity : AppCompatActivity() {
     private lateinit var settings: Settings
 
     data class ProjectItem(
-        val folder: GitHubClient.ProjectFolder,
+        val folder: ProjectFolder,
         var lastCommitDate: String = "",
         var lastCommitSummary: String = "",
         var isArchived: Boolean = false
@@ -427,7 +429,7 @@ class TimeMachineActivity : AppCompatActivity() {
     inner class CheckpointAdapter(
         private val projectName: String,
         private val filePath: String,
-        private val items: List<GitHubClient.CommitInfo>
+        private val items: List<CommitInfo>
     ) : RecyclerView.Adapter<CheckpointAdapter.VH>() {
 
         inner class VH(val binding: ItemCheckpointBinding) :
@@ -764,7 +766,7 @@ class TimeMachineActivity : AppCompatActivity() {
 
     // ── Formatting helpers ───────────────────────────────────────────────
 
-    private fun formatCommitSummary(commit: GitHubClient.CommitInfo): String {
+    private fun formatCommitSummary(commit: CommitInfo): String {
         val dateStr = formatRelativeDate(commit.date)
         val comment = parseUserComment(commit.message)
         return "$dateStr — $comment"

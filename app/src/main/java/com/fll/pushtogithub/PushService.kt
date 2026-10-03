@@ -1,5 +1,6 @@
 package com.fll.pushtogithub
 
+import com.fll.pushtogithub.shared.CommitInfo
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -121,7 +122,7 @@ class PushService(private val settings: Settings) {
         robotNickname: String?,
         dateStamp: String,
         comment: String,
-        history: List<GitHubClient.CommitInfo>
+        history: List<CommitInfo>
     ): String {
         val sb = StringBuilder()
         sb.append("# 🤖 $projectName\n\n")
