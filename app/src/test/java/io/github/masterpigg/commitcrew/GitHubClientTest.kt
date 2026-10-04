@@ -81,6 +81,27 @@ class GitHubClientTest {
         assertTrue(client.testConnection()!!.contains("500"))
     }
 
+    @Test
+    fun recordsTokenExpirationFromResponseHeader() {
+        assertNull(client.tokenExpiresAt)
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody("{}")
+                .addHeader("github-authentication-token-expiration", "2026-12-31 00:00:00 UTC")
+        )
+        respond(200, "{}") // later response without the header keeps the known date
+        assertNull(client.testConnection())
+        assertEquals(1798675200000L, client.tokenExpiresAt)
+        assertNull(client.testConnection())
+        assertEquals(1798675200000L, client.tokenExpiresAt)
+    }
+
+    @Test
+    fun tokenWithoutExpirationLeavesItUnknown() {
+        respond(200, "{}")
+        assertNull(client.testConnection())
+        assertNull(client.tokenExpiresAt)
+    }
+
     // --- folders, history and file contents --------------------------------
 
     @Test

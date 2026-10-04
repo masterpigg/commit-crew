@@ -51,7 +51,7 @@ your-team-repo/
 
 1. On GitHub go to **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**.
 2. **Token name:** something like `FLL Tablet`.
-3. **Expiration:** the end of your season (for example 90 days).
+3. **Expiration:** the end of your season (for example 90 days). Two weeks before it runs out, the app shows a warning on the Task Board and in Setup, so you have time to make a new one.
 4. **Repository access:** **Only select repositories**, then pick your team repository.
 5. **Repository permissions:**
    - ✅ **Contents: Read and write** (saving code, notes and photos)

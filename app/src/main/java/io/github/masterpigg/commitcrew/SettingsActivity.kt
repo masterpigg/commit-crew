@@ -92,6 +92,14 @@ class SettingsActivity : AppCompatActivity() {
         )
 
         setupVersionDisplay()
+        showTokenExpiryWarning()
+    }
+
+    private fun showTokenExpiryWarning() {
+        val warning = settings.tokenExpiresAt?.let {
+            TokenExpiry.warning(it, System.currentTimeMillis())
+        } ?: return
+        setStatus(warning, isError = true)
     }
 
     private fun setupVersionDisplay() {
@@ -200,19 +208,27 @@ class SettingsActivity : AppCompatActivity() {
         setStatus("Checking…", isError = false)
 
         lifecycleScope.launch {
-            val error = withContext(Dispatchers.IO) {
-                GitHubClient(
-                    token = settings.token,
-                    owner = settings.owner,
-                    repo = settings.repo,
-                    branch = settings.branch
-                ).testConnection()
-            }
+            val client = GitHubClient(
+                token = settings.token,
+                owner = settings.owner,
+                repo = settings.repo,
+                branch = settings.branch
+            )
+            val error = withContext(Dispatchers.IO) { client.testConnection() }
             binding.buttonTest.isEnabled = true
+            val now = System.currentTimeMillis()
             if (error == null) {
-                setStatus("Connected. Repo is reachable.", isError = false)
+                // A successful response is authoritative: no header means no expiration.
+                settings.tokenExpiresAt = client.tokenExpiresAt
+                val expiry = TokenExpiry.describe(client.tokenExpiresAt, now)
+                val expiresSoon = client.tokenExpiresAt?.let { TokenExpiry.warning(it, now) } != null
+                setStatus("Connected. Repo is reachable.\n$expiry", isError = expiresSoon)
             } else {
-                setStatus(error, isError = true)
+                // An expired token is rejected with a plain 401, so explain it if we know why.
+                val expired = settings.tokenExpiresAt
+                    ?.takeIf { TokenExpiry.isExpired(it, now) }
+                    ?.let { TokenExpiry.warning(it, now) }
+                setStatus(expired ?: error, isError = true)
             }
         }
     }
