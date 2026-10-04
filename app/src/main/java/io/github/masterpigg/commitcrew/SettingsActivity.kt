@@ -65,6 +65,7 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        fitSystemBars(binding.root, binding.toolbar)
 
         settings = Settings(this)
         binding.toolbar.setNavigationOnClickListener { finish() }

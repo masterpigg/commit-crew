@@ -84,6 +84,7 @@ class ShareActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityShareBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        fitSystemBars(binding.root, binding.toolbar)
 
         settings = Settings(this)
 

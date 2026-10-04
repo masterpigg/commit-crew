@@ -72,6 +72,7 @@ class KanbanActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityKanbanBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        fitSystemBars(binding.root, binding.toolbar)
 
         settings = Settings(this)
 

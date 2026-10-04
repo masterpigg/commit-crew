@@ -2,6 +2,5 @@
     <style name="Theme.CommitCrew" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/brand_primary</item>
         <item name="colorOnPrimary">@color/white</item>
-        <item name="android:statusBarColor">@color/brand_primary</item>
     </style>
 </resources>
