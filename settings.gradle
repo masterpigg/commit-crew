@@ -16,6 +16,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "PushToGitHub"
+rootProject.name = "CommitCrew"
 include(":app")
 include(":shared")

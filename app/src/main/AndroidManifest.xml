@@ -28,7 +28,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.PushToGitHub">
+        android:theme="@style/Theme.CommitCrew">
 
         <!-- Kanban Sticky Notes Activity (Default Landing Screen) -->
         <activity
