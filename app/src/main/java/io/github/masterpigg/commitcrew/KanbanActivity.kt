@@ -63,6 +63,7 @@ class KanbanActivity : AppCompatActivity() {
         isNavigating = false
         binding.mainNavToggle.check(R.id.navTaskBoard)
         if (::settings.isInitialized && settings.isConfigured) {
+            showTokenExpiryBanner()
             loadCardsFromGitHub()
         }
     }
@@ -478,8 +479,11 @@ class KanbanActivity : AppCompatActivity() {
                 val labelColors = client.getRepoLabelColors()
                 val resultCards = client.getKanbanCards(settings.teamRoster)
                 val allDiscovered = resultCards.flatMap { it.owners }.distinct()
+                client.tokenExpiresAt?.let { settings.tokenExpiresAt = it }
                 KanbanLoadResult(resultCards, allDiscovered, labelColors)
             }
+
+            showTokenExpiryBanner()
 
             repoLabelColors = result.labelColors
 
@@ -504,6 +508,15 @@ class KanbanActivity : AppCompatActivity() {
             binding.progress.visibility = View.GONE
             renderColumns()
         }
+    }
+
+    /** Warn the team on the board when the GitHub token is about to expire. */
+    private fun showTokenExpiryBanner() {
+        val warning = settings.tokenExpiresAt?.let {
+            TokenExpiry.warning(it, System.currentTimeMillis())
+        }
+        binding.tokenExpiryBanner.text = warning.orEmpty()
+        binding.tokenExpiryBanner.visibility = if (warning != null) View.VISIBLE else View.GONE
     }
 
     private fun renderColumns() {

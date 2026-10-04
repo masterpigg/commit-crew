@@ -39,7 +39,26 @@ class Settings(context: Context) {
 
     var token: String
         get() = prefs.getString(KEY_TOKEN, "").orEmpty()
-        set(value) = prefs.edit().putString(KEY_TOKEN, value.trim()).apply()
+        set(value) {
+            val trimmed = value.trim()
+            val editor = prefs.edit().putString(KEY_TOKEN, trimmed)
+            // A new token has its own expiration date; forget the old one.
+            if (trimmed != token) editor.remove(KEY_TOKEN_EXPIRES_AT)
+            editor.apply()
+        }
+
+    /**
+     * When the token expires (epoch millis), as last reported by GitHub, or null
+     * if unknown or the token never expires.
+     */
+    var tokenExpiresAt: Long?
+        get() = prefs.getLong(KEY_TOKEN_EXPIRES_AT, 0L).takeIf { it > 0L }
+        set(value) {
+            val editor = prefs.edit()
+            if (value == null) editor.remove(KEY_TOKEN_EXPIRES_AT)
+            else editor.putLong(KEY_TOKEN_EXPIRES_AT, value)
+            editor.apply()
+        }
 
     var owner: String
         get() = prefs.getString(KEY_OWNER, "").orEmpty()
@@ -211,6 +230,7 @@ class Settings(context: Context) {
 
         // GitHub connection
         private const val KEY_TOKEN = "token"
+        private const val KEY_TOKEN_EXPIRES_AT = "token_expires_at"
         private const val KEY_OWNER = "owner"
         private const val KEY_REPO = "repo"
         private const val KEY_BRANCH = "branch"

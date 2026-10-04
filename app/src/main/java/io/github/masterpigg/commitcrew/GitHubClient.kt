@@ -32,10 +32,24 @@ class GitHubClient(
     private val branch: String,
     private val apiBase: String = API_BASE
 ) {
+    /**
+     * When the token expires (epoch millis), as reported by the latest GitHub
+     * response that carried the expiration header. Null until a response says,
+     * and stays null for tokens that never expire.
+     */
+    @Volatile
+    var tokenExpiresAt: Long? = null
+        private set
+
     private val http = OkHttpClient.Builder()
         .connectTimeout(20, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
+        .addInterceptor { chain ->
+            val response = chain.proceed(chain.request())
+            TokenExpiry.parse(response.header(TokenExpiry.HEADER))?.let { tokenExpiresAt = it }
+            response
+        }
         .build()
 
     /** A saved documentation file entry from the repo. */

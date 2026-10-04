@@ -66,6 +66,20 @@
 
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
+    <!-- Shown when the team's GitHub token is about to expire or has expired -->
+    <TextView
+        android:id="@+id/tokenExpiryBanner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/warning_background"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:textColor="@color/warning_text"
+        android:textSize="14sp"
+        android:visibility="gone" />
+
     <!-- Single-Row Compact Filter & Action Bar -->
     <LinearLayout
         android:layout_width="match_parent"
