@@ -29,12 +29,12 @@ def getGitTag = { ->
 
 android {
     namespace 'io.github.masterpigg.commitcrew'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         applicationId "io.github.masterpigg.commitcrew"
         minSdk 24        // Android 7.0 — matches LEGO SPIKE app's minimum
-        targetSdk 34
+        targetSdk 36
         // The release workflow sets these from the pushed tag (v1.2.0 -> 1.2.0) and run number.
         versionCode((System.getenv("VERSION_CODE") ?: "1").toInteger())
         versionName(System.getenv("VERSION_NAME") ?: "1.0")

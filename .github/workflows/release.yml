@@ -1,7 +1,8 @@
 name: Release APK
 
 # Push a version tag (for example `git tag v1.2.0 && git push origin v1.2.0`)
-# to build a signed release APK and attach it to a GitHub Release.
+# to build a signed release APK (for sideloading) and Android App Bundle (for
+# uploading to Google Play) and attach both to a GitHub Release.
 on:
   push:
     tags: [ 'v*' ]
@@ -11,7 +12,7 @@ permissions:
 
 jobs:
   release:
-    name: Build and publish signed APK
+    name: Build and publish signed APK and AAB
     runs-on: ubuntu-latest
 
     steps:
@@ -52,7 +53,7 @@ jobs:
       - name: Run Unit Tests
         run: ./gradlew :shared:testDebugUnitTest :app:testDebugUnitTest --stacktrace
 
-      - name: Build Signed Release APK
+      - name: Build Signed Release APK and App Bundle
         env:
           RELEASE_KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
@@ -61,14 +62,16 @@ jobs:
           VERSION_CODE: ${{ github.run_number }}
         run: |
           export VERSION_NAME="${GITHUB_REF_NAME#v}"
-          ./gradlew :app:assembleRelease --stacktrace
+          ./gradlew :app:assembleRelease :app:bundleRelease --stacktrace
           cp app/build/outputs/apk/release/app-release.apk "commit-crew-${GITHUB_REF_NAME}.apk"
+          cp app/build/outputs/bundle/release/app-release.aab "commit-crew-${GITHUB_REF_NAME}.aab"
 
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" "commit-crew-${GITHUB_REF_NAME}.apk" \
+          gh release create "$GITHUB_REF_NAME" \
+            "commit-crew-${GITHUB_REF_NAME}.apk" "commit-crew-${GITHUB_REF_NAME}.aab" \
             --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
 
       - name: Remove Keystore

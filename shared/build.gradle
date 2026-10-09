@@ -58,7 +58,7 @@ kotlin {
 
 android {
     namespace 'io.github.masterpigg.commitcrew.shared'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         minSdk 24

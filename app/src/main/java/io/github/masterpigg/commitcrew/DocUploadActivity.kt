@@ -151,6 +151,7 @@ class DocUploadActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityDocUploadBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        fitSystemBars(binding.root, binding.toolbar)
 
         settings = Settings(this)
 

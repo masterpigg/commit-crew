@@ -164,7 +164,7 @@ On Windows use `.\gradlew.bat` instead of `./gradlew`. If Gradle cannot find Jav
 
 ### Publishing a release
 
-Pushing a tag that starts with `v` runs the [Release APK workflow](.github/workflows/release.yml). It runs the unit tests, builds a signed release APK and attaches it to a new GitHub Release with generated notes:
+Pushing a tag that starts with `v` runs the [Release APK workflow](.github/workflows/release.yml). It runs the unit tests, builds a signed release APK (for installing directly on tablets) and a signed Android App Bundle (`.aab`, the format Google Play requires for uploads), and attaches both to a new GitHub Release with generated notes:
 
 ```bash
 git tag v1.2.0
@@ -187,7 +187,7 @@ The version name comes from the tag (`v1.2.0` becomes `1.2.0`) and the version c
    | `RELEASE_KEY_ALIAS` | The alias, e.g. `commit-crew` |
    | `RELEASE_KEY_PASSWORD` | The key password (the same as the keystore password unless you set a different one) |
 
-Never commit the keystore; `*.keystore` is already in `.gitignore`. To build a signed release locally, set `RELEASE_KEYSTORE_PATH` and the three password and alias variables before running `./gradlew :app:assembleRelease`. Without them the build produces an unsigned APK.
+Never commit the keystore; `*.keystore` is already in `.gitignore`. To build a signed release locally, set `RELEASE_KEYSTORE_PATH` and the three password and alias variables before running `./gradlew :app:assembleRelease` (APK) or `./gradlew :app:bundleRelease` (App Bundle). Without them the build produces unsigned files.
 
 ### Project layout
 
@@ -196,7 +196,7 @@ Never commit the keystore; `*.keystore` is already in `.gitignore`. To build a s
 | `app/` | The Android app (Kotlin, View-based UI): activities, GitHub REST client, encrypted settings, `.llsp3` extraction |
 | `shared/` | Kotlin Multiplatform code shared with a future iOS app: data models, FLL Core Values, README templates, owner colors |
 | `.github/workflows/build.yml` | CI: runs unit tests and builds the debug APK on every push and pull request, and builds the shared module for iOS on macOS |
-| `.github/workflows/release.yml` | Release: on a `v*` tag, builds a signed release APK and publishes it as a GitHub Release |
+| `.github/workflows/release.yml` | Release: on a `v*` tag, builds a signed release APK and App Bundle and publishes them as a GitHub Release |
 
 ---
 
