@@ -180,6 +180,21 @@ class GitHubClientTest {
     }
 
     @Test
+    fun getFileAtCommitFetchesLargeFilesAsRawBytes() {
+        // Over 1 MB the Contents API leaves "content" empty and only reports the size.
+        respond(200, """{"content":"","encoding":"none","size":2000000}""")
+        respond(200, "raw-bytes")
+
+        val bytes = client.getFileAtCommit("robot-game/Run 1/Run 1.llsp3", "main")
+
+        assertEquals("raw-bytes", String(bytes!!, Charsets.UTF_8))
+        takeRequest()
+        val raw = takeRequest()
+        assertEquals("/repos/fll-team/season%20repo/contents/robot-game/Run%201/Run%201.llsp3?ref=main", raw.path)
+        assertEquals("application/vnd.github.raw+json", raw.getHeader("Accept"))
+    }
+
+    @Test
     fun getFileAtCommitReturnsNullWhenMissingOrEmpty() {
         respond(404)
         respond(200, """{"content":""}""")
@@ -338,7 +353,7 @@ class GitHubClientTest {
             ]"""
         )
 
-        val cards = client.getKanbanCards(teamRoster = listOf("Fido", "Whiskers"))
+        val cards = client.getKanbanCards(teamRoster = listOf("Fido", "Whiskers"))!!
 
         assertEquals(listOf(4, 3, 1), cards.map { it.number })
 
@@ -362,9 +377,57 @@ class GitHubClientTest {
     }
 
     @Test
-    fun getKanbanCardsReturnsEmptyOnError() {
+    fun getKanbanCardsReturnsNullOnErrorSoCallersKeepTheirCache() {
         respond(403, """{"message":"rate limited"}""")
-        assertTrue(client.getKanbanCards().isEmpty())
+        assertNull(client.getKanbanCards())
+    }
+
+    @Test
+    fun getKanbanCardsTrustsColumnAndCategoryLabelsOverWording() {
+        respond(
+            200,
+            """[
+              {"number":1,"title":"Finish the gyro arm","body":"Mark it done when complete",
+               "state":"open","labels":[{"name":"todo","color":""},{"name":"general","color":""}]},
+              {"number":2,"title":"Clean up the robot table","body":"","state":"open",
+               "labels":[{"name":"doing","color":""},{"name":"general","color":""},{"name":"core-value:innovation","color":""}]},
+              {"number":3,"title":"Finish the poster","body":"","state":"open","labels":[]}
+            ]"""
+        )
+
+        val cards = client.getKanbanCards().orEmpty().associateBy { it.number }
+
+        assertEquals("todo", cards.getValue(1).column)
+        assertEquals("general", cards.getValue(1).category)
+        assertEquals("doing", cards.getValue(2).column)
+        assertEquals("general", cards.getValue(2).category)
+        // Without labels the wording is still the best guess.
+        assertEquals("done", cards.getValue(3).column)
+    }
+
+    @Test
+    fun getKanbanCardsFollowsPaginationAndSkipsDeletedCards() {
+        val next = server.url("/repos/fll-team/season%20repo/issues?state=all&per_page=100&page=2")
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(200)
+                .setHeader("Link", "<$next>; rel=\"next\", <$next>; rel=\"last\"")
+                .setBody("""[{"number":101,"title":"Newest","body":null,"state":"open","labels":[]}]""")
+        )
+        respond(
+            200,
+            """[
+              {"number":2,"title":"Gone","body":"","state":"closed","state_reason":"not_planned","labels":[]},
+              {"number":1,"title":"Oldest","body":"","state":"closed","state_reason":"completed","labels":[]}
+            ]"""
+        )
+
+        val cards = client.getKanbanCards()!!
+
+        assertEquals(listOf(101, 1), cards.map { it.number })
+        assertEquals("", cards.first().body)
+        takeRequest()
+        assertEquals(next.encodedPath + "?" + next.encodedQuery, takeRequest().path)
     }
 
     @Test
@@ -443,13 +506,31 @@ class GitHubClientTest {
     }
 
     @Test
-    fun deleteKanbanCardClosesIssue() {
+    fun deleteKanbanCardClosesIssueAsNotPlanned() {
         respond(200, "{}")
         respond(404)
         assertTrue(client.deleteKanbanCard(9))
         assertFalse(client.deleteKanbanCard(9))
         val body = JSONObject(takeRequest().body.readUtf8())
         assertEquals("closed", body.getString("state"))
+        assertEquals("not_planned", body.getString("state_reason"))
+    }
+
+    @Test
+    fun updateKanbanCardFullStripsEveryHeaderLine() {
+        respond(200, "{}")
+
+        client.updateKanbanCardFull(
+            number = 7,
+            title = "t",
+            body = "Core Values: 🎉 Fun\nWorkers: Fido\n\nCheck the mat",
+            column = "todo",
+            category = "general",
+            owners = listOf("Polly")
+        )
+
+        val body = JSONObject(takeRequest().body.readUtf8())
+        assertEquals("Workers: Polly\n\nCheck the mat", body.getString("body"))
     }
 
     // --- labels and Projects v2 colors -------------------------------------

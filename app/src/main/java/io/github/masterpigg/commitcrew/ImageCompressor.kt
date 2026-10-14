@@ -3,6 +3,8 @@ package io.github.masterpigg.commitcrew
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import androidx.exifinterface.media.ExifInterface
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
 /**
@@ -47,7 +49,9 @@ object ImageCompressor {
         val decodedBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, decodeOptions)
             ?: return imageBytes
 
-        val scaledBitmap = scaleBitmapToMax(decodedBitmap, maxDimension)
+        // Re-encoding drops the EXIF tags, so bake the camera's orientation into the pixels
+        // first; otherwise phone photos end up sideways or upside down on GitHub.
+        val scaledBitmap = scaleBitmapToMax(decodedBitmap, maxDimension, exifRotation(imageBytes))
 
         val outputStream = ByteArrayOutputStream()
         scaledBitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
@@ -60,20 +64,35 @@ object ImageCompressor {
         return outputStream.toByteArray()
     }
 
-    private fun scaleBitmapToMax(bitmap: Bitmap, maxDimension: Int): Bitmap {
+    /** Degrees the image must be rotated clockwise to display upright, from its EXIF tag. */
+    private fun exifRotation(imageBytes: ByteArray): Int {
+        val orientation = runCatching {
+            ExifInterface(ByteArrayInputStream(imageBytes))
+                .getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+        }.getOrDefault(ExifInterface.ORIENTATION_NORMAL)
+        return when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> 90
+            ExifInterface.ORIENTATION_ROTATE_180 -> 180
+            ExifInterface.ORIENTATION_ROTATE_270 -> 270
+            else -> 0
+        }
+    }
+
+    private fun scaleBitmapToMax(bitmap: Bitmap, maxDimension: Int, rotationDegrees: Int): Bitmap {
         val width = bitmap.width
         val height = bitmap.height
 
-        if (width <= maxDimension && height <= maxDimension) return bitmap
+        if (width <= maxDimension && height <= maxDimension && rotationDegrees == 0) return bitmap
 
-        val scale = if (width >= height) {
-            maxDimension.toFloat() / width
-        } else {
-            maxDimension.toFloat() / height
+        val scale = when {
+            width <= maxDimension && height <= maxDimension -> 1f
+            width >= height -> maxDimension.toFloat() / width
+            else -> maxDimension.toFloat() / height
         }
 
         val matrix = Matrix().apply {
             postScale(scale, scale)
+            if (rotationDegrees != 0) postRotate(rotationDegrees.toFloat())
         }
 
         return Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true)

@@ -252,7 +252,7 @@ class SettingsActivity : AppCompatActivity() {
                     repo = settings.repo,
                     branch = settings.branch
                 )
-                val cards = client.getKanbanCards()
+                val cards = client.getKanbanCards().orEmpty()
                 cards.flatMap { it.owners }.distinct()
             }
 

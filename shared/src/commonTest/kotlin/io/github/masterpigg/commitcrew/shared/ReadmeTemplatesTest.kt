@@ -10,8 +10,8 @@ class ReadmeTemplatesTest {
     @Test
     fun newRootReadmeLinksEveryTeamMember() {
         val readme = ReadmeTemplates.getRootReadme("octo", "team-repo", listOf("Fido", "Coach Owl"))
-        assertTrue("* [**Fido**](https://github.com/octo/team-repo/issues?q=is%3Aissue+owner%3AFido)" in readme)
-        assertTrue("[**Coach Owl**]" in readme)
+        assertTrue("* [**Fido**](https://github.com/octo/team-repo/issues?q=is%3Aissue+label%3A%22Fido%22)" in readme)
+        assertTrue("[**Coach Owl**](https://github.com/octo/team-repo/issues?q=is%3Aissue+label%3A%22Coach%20Owl%22)" in readme)
         assertTrue("## 📂 Team Sections & Folder Structure" in readme)
     }
 

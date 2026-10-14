@@ -115,13 +115,19 @@ class ShareActivity : AppCompatActivity() {
 
         if (llspFiles.isEmpty()) {
             // No .llsp3 files found — forward non-code files to DocUploadActivity
+            // Keep the extra in the shape the action promises: a single Uri for ACTION_SEND
+            // (DocUploadActivity reads it with getParcelableExtra), a list for SEND_MULTIPLE.
             val docIntent = Intent(this, DocUploadActivity::class.java).apply {
                 action = intent.action
                 type = intent.type
-                putParcelableArrayListExtra(
-                    Intent.EXTRA_STREAM,
-                    ArrayList(sharedFiles.map { it.uri })
-                )
+                if (sharedFiles.size == 1) {
+                    putExtra(Intent.EXTRA_STREAM, sharedFiles[0].uri)
+                } else {
+                    putParcelableArrayListExtra(
+                        Intent.EXTRA_STREAM,
+                        ArrayList(sharedFiles.map { it.uri })
+                    )
+                }
             }
             startActivity(docIntent)
             finish()
