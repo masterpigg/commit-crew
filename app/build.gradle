@@ -105,6 +105,9 @@ dependencies {
     // JSON handling for GitHub API request/response bodies.
     implementation 'org.json:json:20240303'
 
+    // Reads the camera orientation tag so re-encoded photos stay upright.
+    implementation 'androidx.exifinterface:exifinterface:1.3.7'
+
     // AndroidSVG for rendering SVG vector diagrams from SPIKE projects
     implementation 'com.caverock:androidsvg-aar:1.4'
 

@@ -159,9 +159,28 @@ class GitHubClient(
                 val text = resp.body?.string().orEmpty()
                 val obj = JSONObject(text)
                 val content = obj.optString("content")
-                if (content.isBlank()) return null
+                if (content.isBlank()) {
+                    // Files over 1 MB come back with an empty "content"; ask for the raw bytes instead.
+                    return if (obj.optLong("size") > 0L) getRawFile(url) else null
+                }
                 // GitHub wraps the base64 every 60 chars; okio skips the line breaks.
                 content.decodeBase64()?.toByteArray()
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /** Fetch a Contents API [url] with the raw media type, which works for files up to 100 MB. */
+    private fun getRawFile(url: String): ByteArray? {
+        val request = baseRequest(url)
+            .header("Accept", "application/vnd.github.raw+json")
+            .get()
+            .build()
+        return try {
+            http.newCall(request).execute().use { resp ->
+                if (!resp.isSuccessful) return null
+                resp.body?.bytes()?.takeIf { it.isNotEmpty() }
             }
         } catch (e: Exception) {
             null
@@ -659,128 +678,164 @@ class GitHubClient(
         }
     }
 
-    /** Get all Kanban cards / GitHub issues for this repository. */
-    fun getKanbanCards(teamRoster: List<String> = emptyList()): List<KanbanCard> {
-        val url = "$apiBase/repos/${enc(owner)}/${enc(repo)}/issues?state=all&per_page=100"
-        val request = baseRequest(url).get().build()
+    /**
+     * Get all Kanban cards / GitHub issues for this repository, following
+     * pagination so boards with more than 100 cards load completely.
+     *
+     * Returns null when GitHub could not be reached or answered with an error,
+     * so callers can keep showing what they already have instead of an empty board.
+     */
+    fun getKanbanCards(teamRoster: List<String> = emptyList()): List<KanbanCard>? {
+        var url: String? = "$apiBase/repos/${enc(owner)}/${enc(repo)}/issues?state=all&per_page=100"
+        val cards = mutableListOf<KanbanCard>()
         return try {
-            http.newCall(request).execute().use { resp ->
-                if (!resp.isSuccessful) return emptyList()
-                val text = resp.body?.string().orEmpty()
-                val array = JSONArray(text)
-                val cards = mutableListOf<KanbanCard>()
-
-                for (i in 0 until array.length()) {
-                    val obj = array.getJSONObject(i)
-                    if (obj.has("pull_request")) continue
-
-                    val number = obj.optInt("number")
-                    val title = obj.optString("title")
-                    val body = obj.optString("body")
-                    val state = obj.optString("state")
-
-                    val labelsArray = obj.optJSONArray("labels") ?: JSONArray()
-                    val labelNames = mutableListOf<String>()
-                    val owners = mutableListOf<String>()
-                    val ownerColors = mutableMapOf<String, String>()
-                    val coreValues = mutableListOf<String>()
-
-                    for (j in 0 until labelsArray.length()) {
-                        val lblObj = labelsArray.getJSONObject(j)
-                        val lbl = lblObj.optString("name")
-                        val colorHex = lblObj.optString("color")
-                        val hex = if (colorHex.isNotBlank()) "#${colorHex.removePrefix("#")}" else "#1976D2"
-
-                        labelNames.add(lbl.lowercase())
-
-                        val cv = CoreValue.fromLabel(lbl)
-                        if (cv != null) {
-                            coreValues.add(cv.displayName)
-                        } else if (teamRoster.any { it.equals(lbl, ignoreCase = true) }) {
-                            val matched = teamRoster.first { it.equals(lbl, ignoreCase = true) }
-                            if (!owners.contains(matched)) {
-                                owners.add(matched)
-                            }
-                            ownerColors[matched] = hex
-                        } else if (lbl.startsWith("owner:", ignoreCase = true)) {
-                            val ownerName = lbl.substring(6).trim()
-                            if (!owners.contains(ownerName)) {
-                                owners.add(ownerName)
-                            }
-                            ownerColors[ownerName] = hex
-                        }
-                    }
-
-                    val assignees = obj.optJSONArray("assignees")
-                    if (assignees != null) {
-                        for (j in 0 until assignees.length()) {
-                            val login = assignees.getJSONObject(j).optString("login")
-                            if (login.isNotBlank() && !owners.contains(login)) {
-                                owners.add(login)
-                            }
-                        }
-                    }
-
-                    // Extract owners and core values from issue body
-                    if (body.isNotBlank()) {
-                        val match = Regex("(?i)(?:owners?|workers?):\\s*([^\\r\\n]+)").find(body)
-                        if (match != null) {
-                            val names = match.groupValues[1].split(",", ";").map { it.trim() }
-                            for (n in names) {
-                                if (n.isNotBlank() && !owners.contains(n)) {
-                                    owners.add(n)
-                                }
-                            }
-                        }
-
-                        val cvMatch = Regex("(?i)core values?:\\s*([^\\r\\n]+)").find(body)
-                        if (cvMatch != null) {
-                            val names = cvMatch.groupValues[1].split(",", ";").map { it.trim() }
-                            for (n in names) {
-                                val cv = CoreValue.entries.find { it.displayName == n || it.displayName.contains(n) }
-                                if (cv != null && !coreValues.contains(cv.displayName)) {
-                                    coreValues.add(cv.displayName)
-                                }
-                            }
-                        }
-                    }
-
-                    val allText = (title + " " + body + " " + labelNames.joinToString(" ")).lowercase()
-                    val detectedColumn = when {
-                        state.equals("closed", ignoreCase = true) ||
-                            allText.contains("done") || allText.contains("complete") || allText.contains("finish") -> "done"
-
-                        allText.contains("doing") || allText.contains("progress") || allText.contains("in progress") ||
-                            allText.contains("wip") || allText.contains("working") || allText.contains("review") -> "doing"
-
-                        else -> "todo"
-                    }
-
-                    val detectedCategory = when {
-                        labelNames.contains("robot-game") || labelNames.contains("robot") || allText.contains("robot") -> "robot-game"
-                        labelNames.contains("innovation-project") || labelNames.contains("innovation") || labelNames.contains("research") || allText.contains("innovation") -> "innovation-project"
-                        else -> "general"
-                    }
-
-                    cards.add(
-                        KanbanCard(
-                            number = number,
-                            title = title,
-                            body = body,
-                            state = state,
-                            column = detectedColumn,
-                            owners = owners.distinct().toMutableList(),
-                            ownerColors = ownerColors,
-                            category = detectedCategory,
-                            coreValues = coreValues.distinct().toMutableList()
-                        )
-                    )
+            while (url != null) {
+                val request = baseRequest(url).get().build()
+                http.newCall(request).execute().use { resp ->
+                    if (!resp.isSuccessful) return null
+                    val text = resp.body?.string().orEmpty()
+                    cards += parseKanbanCards(JSONArray(text), teamRoster)
+                    url = nextPageUrl(resp.header("Link"))
                 }
-                cards.sortedByDescending { it.number }
             }
+            cards.sortedByDescending { it.number }
         } catch (e: Exception) {
-            emptyList()
+            null
         }
+    }
+
+    /** The URL tagged rel="next" in a GitHub Link header, or null on the last page. */
+    private fun nextPageUrl(linkHeader: String?): String? {
+        if (linkHeader.isNullOrBlank()) return null
+        for (part in linkHeader.split(",")) {
+            val match = Regex("""<([^>]+)>\s*;\s*rel="next"""").find(part.trim()) ?: continue
+            return match.groupValues[1]
+        }
+        return null
+    }
+
+    private fun parseKanbanCards(array: JSONArray, teamRoster: List<String>): List<KanbanCard> {
+        val cards = mutableListOf<KanbanCard>()
+
+        for (i in 0 until array.length()) {
+            val obj = array.getJSONObject(i)
+            if (obj.has("pull_request")) continue
+            // Cards the app deleted are closed as "not planned"; keep them off the board.
+            if (obj.optString("state_reason") == DELETED_STATE_REASON) continue
+
+            val number = obj.optInt("number")
+            val title = obj.optString("title")
+            // Android's org.json turns a JSON null into the text "null"; issues made on
+            // github.com without a description have a null body.
+            val body = if (obj.isNull("body")) "" else obj.optString("body")
+            val state = obj.optString("state")
+
+            val labelsArray = obj.optJSONArray("labels") ?: JSONArray()
+            val labelNames = mutableListOf<String>()
+            val owners = mutableListOf<String>()
+            val ownerColors = mutableMapOf<String, String>()
+            val coreValues = mutableListOf<String>()
+
+            for (j in 0 until labelsArray.length()) {
+                val lblObj = labelsArray.getJSONObject(j)
+                val lbl = lblObj.optString("name")
+                val colorHex = lblObj.optString("color")
+                val hex = if (colorHex.isNotBlank()) "#${colorHex.removePrefix("#")}" else "#1976D2"
+
+                labelNames.add(lbl.lowercase())
+
+                val cv = CoreValue.fromLabel(lbl)
+                if (cv != null) {
+                    coreValues.add(cv.displayName)
+                } else if (teamRoster.any { it.equals(lbl, ignoreCase = true) }) {
+                    val matched = teamRoster.first { it.equals(lbl, ignoreCase = true) }
+                    if (!owners.contains(matched)) {
+                        owners.add(matched)
+                    }
+                    ownerColors[matched] = hex
+                } else if (lbl.startsWith("owner:", ignoreCase = true)) {
+                    val ownerName = lbl.substring(6).trim()
+                    if (!owners.contains(ownerName)) {
+                        owners.add(ownerName)
+                    }
+                    ownerColors[ownerName] = hex
+                }
+            }
+
+            val assignees = obj.optJSONArray("assignees")
+            if (assignees != null) {
+                for (j in 0 until assignees.length()) {
+                    val login = assignees.getJSONObject(j).optString("login")
+                    if (login.isNotBlank() && !owners.contains(login)) {
+                        owners.add(login)
+                    }
+                }
+            }
+
+            // Extract owners and core values from issue body
+            if (body.isNotBlank()) {
+                val match = Regex("(?i)(?:owners?|workers?):\\s*([^\\r\\n]+)").find(body)
+                if (match != null) {
+                    val names = match.groupValues[1].split(",", ";").map { it.trim() }
+                    for (n in names) {
+                        if (n.isNotBlank() && !owners.contains(n)) {
+                            owners.add(n)
+                        }
+                    }
+                }
+
+                val cvMatch = Regex("(?i)core values?:\\s*([^\\r\\n]+)").find(body)
+                if (cvMatch != null) {
+                    val names = cvMatch.groupValues[1].split(",", ";").map { it.trim() }
+                    for (n in names) {
+                        val cv = CoreValue.entries.find { it.displayName == n || it.displayName.contains(n) }
+                        if (cv != null && !coreValues.contains(cv.displayName)) {
+                            coreValues.add(cv.displayName)
+                        }
+                    }
+                }
+            }
+
+            // The labels this app writes are authoritative; keyword guessing is only a
+            // fallback for issues created on github.com without them. Otherwise a to-do
+            // card titled "Finish the arm" would land in Done.
+            val allText = (title + " " + body).lowercase()
+            val labelColumn = COLUMNS.firstOrNull { it in labelNames }
+            val detectedColumn = when {
+                state.equals("closed", ignoreCase = true) -> "done"
+                labelColumn != null -> labelColumn
+
+                allText.contains("done") || allText.contains("complete") || allText.contains("finish") -> "done"
+
+                allText.contains("doing") || allText.contains("progress") || allText.contains("in progress") ||
+                    allText.contains("wip") || allText.contains("working") || allText.contains("review") -> "doing"
+
+                else -> "todo"
+            }
+
+            val labelCategory = CATEGORIES.firstOrNull { it in labelNames }
+            val detectedCategory = when {
+                labelCategory != null -> labelCategory
+                labelNames.contains("robot") || allText.contains("robot") -> "robot-game"
+                labelNames.contains("innovation") || labelNames.contains("research") || allText.contains("innovation") -> "innovation-project"
+                else -> "general"
+            }
+
+            cards.add(
+                KanbanCard(
+                    number = number,
+                    title = title,
+                    body = body,
+                    state = state,
+                    column = detectedColumn,
+                    owners = owners.distinct().toMutableList(),
+                    ownerColors = ownerColors,
+                    category = detectedCategory,
+                    coreValues = coreValues.distinct().toMutableList()
+                )
+            )
+        }
+        return cards
     }
 
     /** Create a new Kanban task / GitHub issue. */
@@ -881,7 +936,7 @@ class GitHubClient(
         val ownerHeader = if (owners.isNotEmpty()) "Workers: ${owners.joinToString(", ")}\n" else ""
         val cvHeader = if (coreValues.isNotEmpty()) "Core Values: ${coreValues.joinToString(", ")}\n" else ""
         val header = "$cvHeader$ownerHeader".trim()
-        val cleanBody = body.replace(Regex("(?i)^(owners?|workers?|core values?):.*?\\n+"), "").trim()
+        val cleanBody = body.replace(HEADER_LINES, "").trim()
         val fullBody = if (header.isNotBlank()) "$header\n\n$cleanBody" else cleanBody
 
         val json = JSONObject().apply {
@@ -938,10 +993,15 @@ class GitHubClient(
         }
     }
 
-    /** Delete / close a Kanban card on GitHub. */
+    /**
+     * Delete a Kanban card. The REST API cannot delete issues, so the card is
+     * closed as "not planned", which [getKanbanCards] then leaves off the board
+     * (a plain close would bring it back in the Done column on the next sync).
+     */
     fun deleteKanbanCard(number: Int): Boolean {
         val json = JSONObject().apply {
             put("state", "closed")
+            put("state_reason", DELETED_STATE_REASON)
         }
         val url = "$apiBase/repos/${enc(owner)}/${enc(repo)}/issues/$number"
         val request = baseRequest(url)
@@ -998,6 +1058,13 @@ class GitHubClient(
     companion object {
         private const val API_BASE = "https://api.github.com"
         private val JSON = "application/json; charset=utf-8".toMediaType()
+
+        private val COLUMNS = listOf("todo", "doing", "done")
+        private val CATEGORIES = listOf("robot-game", "innovation-project", "general")
+        private const val DELETED_STATE_REASON = "not_planned"
+
+        /** The "Workers:" / "Core Values:" lines the app prepends to an issue body. */
+        val HEADER_LINES = Regex("(?im)^(owners?|workers?|core values?):.*?(\\n+|$)")
 
         private fun enc(value: String): String =
             URLEncoder.encode(value, "UTF-8").replace("+", "%20")

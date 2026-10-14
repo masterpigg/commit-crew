@@ -12,8 +12,10 @@ object ReadmeTemplates {
         teamRoster: List<String>,
         existingContent: String? = null
     ): String {
+        // Team members are plain labels named after them (see ensureOwnerLabelsExist), so
+        // the link searches that label; quoting keeps names with spaces together.
         val rosterLinks = teamRoster.joinToString("\n") { name ->
-            val queryUrl = "https://github.com/$owner/$repo/issues?q=is%3Aissue+owner%3A$name"
+            val queryUrl = "https://github.com/$owner/$repo/issues?q=is%3Aissue+label%3A%22${urlEncode(name)}%22"
             "* [**$name**]($queryUrl)"
         }
 
@@ -63,6 +65,23 @@ $rosterLinks
 *Powered by Commit Crew 🚀*
         """.trimIndent()
     }
+
+    /** Percent-encode a query value (UTF-8); letters, digits and -._~ pass through. */
+    internal fun urlEncode(value: String): String = buildString {
+        for (byte in value.encodeToByteArray()) {
+            val c = byte.toInt() and 0xFF
+            val ch = c.toChar()
+            if (ch in 'A'..'Z' || ch in 'a'..'z' || ch in '0'..'9' || ch in "-._~") {
+                append(ch)
+            } else {
+                append('%')
+                append(HEX[c shr 4])
+                append(HEX[c and 0x0F])
+            }
+        }
+    }
+
+    private const val HEX = "0123456789ABCDEF"
 
     fun getRobotGameReadme(): String = """
 # 🤖 Robot Game Workspace

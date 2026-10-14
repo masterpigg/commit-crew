@@ -223,8 +223,13 @@ class DocUploadActivity : AppCompatActivity() {
 
         when {
             // Shared file (image, PDF, document)
-            action == Intent.ACTION_SEND && intent.hasExtra(Intent.EXTRA_STREAM) -> {
-                val uri = IntentCompat.getParcelableExtra(intent, Intent.EXTRA_STREAM, Uri::class.java)
+            (action == Intent.ACTION_SEND || action == Intent.ACTION_SEND_MULTIPLE) &&
+                intent.hasExtra(Intent.EXTRA_STREAM) -> {
+                val uris = sharedUris()
+                val uri = uris.firstOrNull()
+                if (uris.size > 1) {
+                    showStatus("Only one file can be saved at a time. Attached the first of ${uris.size}.", isError = false)
+                }
                 if (uri != null) {
                     sharedFileUri = uri
                     detectedMimeType = type ?: contentResolver.getType(uri)
@@ -262,6 +267,17 @@ class DocUploadActivity : AppCompatActivity() {
                 binding.actionOverlay.visibility = View.VISIBLE
             }
         }
+    }
+
+    /**
+     * EXTRA_STREAM holds one Uri for ACTION_SEND and a list for ACTION_SEND_MULTIPLE;
+     * accept either shape whatever the action says.
+     */
+    private fun sharedUris(): List<Uri> {
+        IntentCompat.getParcelableExtra(intent, Intent.EXTRA_STREAM, Uri::class.java)
+            ?.let { return listOf(it) }
+        return IntentCompat.getParcelableArrayListExtra(intent, Intent.EXTRA_STREAM, Uri::class.java)
+            .orEmpty()
     }
 
     private fun showPreview() {

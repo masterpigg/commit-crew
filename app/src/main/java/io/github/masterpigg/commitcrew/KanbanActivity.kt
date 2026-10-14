@@ -455,8 +455,9 @@ class KanbanActivity : AppCompatActivity() {
         }
     }
 
+    /** [cards] is null when GitHub could not be reached; the board then keeps its cached cards. */
     private data class KanbanLoadResult(
-        val cards: List<KanbanCard>,
+        val cards: List<KanbanCard>?,
         val discoveredOwners: List<String>,
         val labelColors: Map<String, String>
     )
@@ -479,7 +480,7 @@ class KanbanActivity : AppCompatActivity() {
 
                 val labelColors = client.getRepoLabelColors()
                 val resultCards = client.getKanbanCards(settings.teamRoster)
-                val allDiscovered = resultCards.flatMap { it.owners }.distinct()
+                val allDiscovered = resultCards.orEmpty().flatMap { it.owners }.distinct()
                 client.tokenExpiresAt?.let { settings.tokenExpiresAt = it }
                 KanbanLoadResult(resultCards, allDiscovered, labelColors)
             }
@@ -500,9 +501,17 @@ class KanbanActivity : AppCompatActivity() {
                 settings.teamRoster = currentRoster
             }
 
-            allCards.clear()
-            allCards.addAll(result.cards)
-            TaskCache.put(this@KanbanActivity, result.cards)
+            if (result.cards != null) {
+                allCards.clear()
+                allCards.addAll(result.cards)
+                TaskCache.put(this@KanbanActivity, result.cards)
+            } else {
+                Toast.makeText(
+                    this@KanbanActivity,
+                    "Couldn't reach GitHub. Showing the last saved board.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
             populateOwnerFilterChips()
             populateCoreValueFilterChips()
             updateFilterButtonLabels()
@@ -838,7 +847,7 @@ class KanbanActivity : AppCompatActivity() {
         setupRichTextToolbar(dialogView, inputBody)
 
         inputTitle.setText(card.title)
-        val cleanBody = card.body.replace(Regex("(?i)^(owners?|workers?|core values?):.*?\\n+"), "").trim()
+        val cleanBody = card.body.replace(GitHubClient.HEADER_LINES, "").trim()
         inputBody.setText(cleanBody)
 
         when (card.category) {
@@ -1074,7 +1083,7 @@ class KanbanActivity : AppCompatActivity() {
                 b.cardRoot.setCardBackgroundColor(Color.parseColor(cardColorHex))
             }
 
-            val cleanBody = card.body.replace(Regex("(?i)^(owners?|workers?|core values?):.*?(\\n+|$)", RegexOption.MULTILINE), "").trim()
+            val cleanBody = card.body.replace(GitHubClient.HEADER_LINES, "").trim()
             val renderedBody = MarkdownUtils.renderMarkdown(cleanBody)
             if (renderedBody.isNotBlank()) {
                 b.textBody.text = renderedBody

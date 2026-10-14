@@ -33,13 +33,15 @@ object MarkdownUtils {
         md = md.replace(Regex("(?m)^##\\s*(.*?)$"), "<b><font size=\"4\" color=\"#000000\">$1</font></b><br/>")
         md = md.replace(Regex("(?m)^#\\s*(.*?)$"), "<b><font size=\"5\" color=\"#000000\">$1</font></b><br/>")
 
-        // Convert bullet lists
-        md = md.replace(Regex("(?m)^\\s*[*\\-+]\t*"), "• ")
+        // Convert bullet lists. A marker needs a space after it, so a line that starts
+        // with **bold** or --- is not turned into a bullet.
+        md = md.replace(Regex("(?m)^\\s*[*\\-+]\\s+"), "• ")
 
-        // Convert bold & italic
+        // Convert bold & italic. Underscores only count between non-word characters,
+        // so file names like photo_1234_x.png keep their underscores.
         md = md.replace(Regex("\\*\\*(.*?)\\*\\*"), "<b>$1</b>")
         md = md.replace(Regex("\\*(.*?)\\*"), "<i>$1</i>")
-        md = md.replace(Regex("_(.*?)_"), "<i>$1</i>")
+        md = md.replace(Regex("(?<![A-Za-z0-9])_(.+?)_(?![A-Za-z0-9])"), "<i>$1</i>")
 
         // Convert newlines to HTML breaks
         md = md.replace("\n", "<br/>")
